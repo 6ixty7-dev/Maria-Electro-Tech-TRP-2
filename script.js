@@ -3,7 +3,7 @@
 //  Updated profit model: Material margin + Labour split
 // ============================================================
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxI41At2-GMrk0S8CU0qb04XKsOcR4WgwJeC-M3WWAxkD3V5Ekn2sKYZhV8EPjotaN_nQ/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MruiXHOZh8jizomGImazO5yf5idUjx_KQkL_JrYyb8WgylFUH453DTExlK6ryFyb5g/exec";
 
 // ── SAVE JOB (new profit model) ───────────────────────────
 async function saveJobToSheet(data) {
