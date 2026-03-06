@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Maria Electro Tech — Trusted Electrical Services</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body { background: var(--white); overflow-x: hidden; }
+
+    /* ===== HEADER ===== */
+    header {
+      background: var(--white);
+      border-bottom: 2px solid var(--border);
+      padding: 0 6%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .logo-wrap { display: flex; align-items: center; gap: 12px; }
+    .logo-wrap img { height: 44px; width: auto; }
+    .logo-name {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 19px;
+      color: var(--blue);
+      line-height: 1.1;
+    }
+    .logo-name small {
+      display: block;
+      font-size: 10px;
+      color: var(--gray);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    .phone-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      padding: 8px 16px;
+      border-radius: 50px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, #0D2030 0%, #0F4A6E 60%, #1E7FAD 100%);
+      padding: 90px 6% 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-circles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hero-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(61,184,232,0.15) 0%, transparent 70%);
+    }
+
+    .hero-circle-1 { width: 600px; height: 600px; right: -100px; top: -200px; }
+    .hero-circle-2 { width: 300px; height: 300px; left: 10%; bottom: -100px; opacity: 0.5; }
+
+    .hero-content { position: relative; z-index: 1; max-width: 680px; }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(61,184,232,0.2);
+      border: 1px solid rgba(61,184,232,0.4);
+      color: var(--blue-mid);
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
+      padding: 7px 16px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: clamp(36px, 5.5vw, 64px);
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.08;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 em {
+      color: var(--blue);
+      font-style: normal;
+      display: block;
+    }
+
+    .hero p {
+      color: rgba(255,255,255,0.65);
+      font-size: 18px;
+      max-width: 500px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+    /* ===== TRUST BAR ===== */
+    .trust-bar {
+      background: var(--blue);
+      padding: 20px 6%;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .trust-item span { font-size: 20px; }
+
+    /* ===== SECTION BASE ===== */
+    section { padding: 80px 6%; }
+
+    .section-tag {
+      display: inline-block;
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      font-size: 11px;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      padding: 5px 14px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+    }
+
+    .section-header { text-align: center; margin-bottom: 52px; }
+    .section-header h2 { font-size: clamp(28px, 4vw, 42px); color: var(--black); margin-top: 10px; }
+    .section-header p { color: var(--gray); font-size: 16px; margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    /* ===== SERVICES ===== */
+    .services { background: var(--bg); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .service-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 30px 26px;
+      border: 2px solid var(--border);
+      transition: all 0.25s ease;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--blue-dark));
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    .service-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--blue-mid);
+    }
+
+    .service-card:hover::before { transform: scaleX(1); }
+
+    .service-icon-wrap {
+      width: 54px; height: 54px;
+      background: var(--blue-light);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 16px;
+      transition: background 0.25s;
+    }
+
+    .service-card:hover .service-icon-wrap { background: var(--blue); }
+
+    .service-card h3 { font-size: 17px; margin-bottom: 8px; color: var(--dark); }
+    .service-card p  { font-size: 14px; color: var(--gray); line-height: 1.6; }
+
+    /* ===== GALLERY ===== */
+    .gallery { background: var(--white); }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .gallery-item {
+      background: var(--blue-light);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      border: 2px dashed var(--blue-mid);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .gallery-item:hover { border-color: var(--blue); background: var(--blue-mid); }
+    .gallery-item .gi-icon { font-size: 32px; opacity: 0.6; }
+
+    /* ===== WHY US ===== */
+    .why {
+      background: linear-gradient(135deg, #0D2030, #0F4A6E);
+    }
+
+    .why .section-header h2 { color: white; }
+    .why .section-header p { color: rgba(255,255,255,0.5); }
+    .why .section-tag { background: rgba(61,184,232,0.2); color: var(--blue-mid); border: 1px solid rgba(61,184,232,0.3); }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .why-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(61,184,232,0.2);
+      border-radius: var(--radius-lg);
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    .why-num {
+      font-family: 'Nunito', sans-serif;
+      font-size: 46px;
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .why-label { color: rgba(255,255,255,0.6); font-size: 14px; }
+
+    /* ===== CONTACT ===== */
+    .contact { background: var(--bg); }
+
+    .contact-box {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: 52px 48px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .contact-box h2 { font-size: clamp(26px, 3.5vw, 38px); margin-bottom: 12px; }
+    .contact-box p  { color: var(--gray); margin-bottom: 32px; }
+
+    .contact-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    .contact-details {
+      margin-top: 36px;
+      padding-top: 28px;
+      border-top: 2px solid var(--gray-light);
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .contact-detail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--gray-dark);
+      font-weight: 600;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--dark);
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+
+    footer a { color: var(--blue); }
+
+    @media (max-width: 600px) {
+      .hero { padding: 60px 5% 72px; }
+      .trust-bar { gap: 20px; }
+      .contact-box { padding: 36px 22px; }
+      .phone-pill { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo-wrap">
+    <img src="logo.png" alt="Maria Electro Tech Logo"/>
+    <div class="logo-name">
+      Maria Electro Tech
+      <small>Electrical Services</small>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="phone-pill">📞 +91 98765 43210</div>
+    <a href="https://wa.me/919876543210" class="btn btn-whatsapp" target="_blank">💬 WhatsApp</a>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-circles">
+    <div class="hero-circle hero-circle-1"></div>
+    <div class="hero-circle hero-circle-2"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-tag">⚡ Licensed & Insured Electricians</div>
+    <h1>
+      Professional Electrical
+      <em>Services You Can Trust</em>
+    </h1>
+    <p>From fan repairs to full home wiring, Maria Electro Tech delivers safe, reliable, and affordable electrical solutions for homes and businesses.</p>
+    <div class="hero-btns">
+      <a href="https://wa.me/919876543210?text=Hello!%20I%20need%20electrical%20service." class="btn btn-primary" target="_blank">
+        💬 Book via WhatsApp
+      </a>
+      <a href="tel:+919876543210" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.4);">
+        📞 Call Us Now
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST BAR ===== -->
+<div class="trust-bar">
+  <div class="trust-item"><span>✅</span> Licensed Electricians</div>
+  <div class="trust-item"><span>🚀</span> Same-Day Service</div>
+  <div class="trust-item"><span>🛡️</span> Work Guaranteed</div>
+  <div class="trust-item"><span>💰</span> Transparent Pricing</div>
+</div>
+
+<!-- ===== SERVICES ===== -->
+<section class="services">
+  <div class="section-header">
+    <div class="section-tag">What We Do</div>
+    <h2>Our Electrical Services</h2>
+    <p>We handle all kinds of electrical work — from small repairs to complete installations.</p>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon-wrap">🔌</div>
+      <h3>Wiring & Rewiring</h3>
+      <p>Full home and office wiring, rewiring old buildings to modern safety standards.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">💡</div>
+      <h3>Fan & Light Fitting</h3>
+      <p>Installation and repair of ceiling fans, LED lights, chandeliers, and tube lights.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">🔧</div>
+      <h3>Switch & Socket Repair</h3>
+      <p>Replace broken switches, sockets, MCB boards, and distribution panels.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">⚡</div>
+      <h3>Short Circuit Repair</h3>
+      <p>Emergency diagnosis and fast repair of short circuits and tripped breakers.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">🏗️</div>
+      <h3>New Construction Wiring</h3>
+      <p>Complete electrical planning and installation for new homes and buildings.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon-wrap">🛡️</div>
+      <h3>Safety Inspection</h3>
+      <p>Full electrical safety audits for homes, shops, and commercial spaces.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GALLERY ===== -->
+<section class="gallery">
+  <div class="section-header">
+    <div class="section-tag">Our Work</div>
+    <h2>Project Gallery</h2>
+    <p>Photos of our completed jobs. Add your own by editing the HTML file.</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+    <div class="gallery-item"><div class="gi-icon">📷</div>Add your project photo here</div>
+  </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section class="why">
+  <div class="section-header">
+    <div class="section-tag">Why Choose Us</div>
+    <h2>Trusted by Hundreds of Families</h2>
+    <p>Years of experience and hundreds of happy customers make us the right choice.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-num">500+</div>
+      <div class="why-label">Jobs Completed</div>
+    </div>
+    <div class="why-card">
+      <div class="why-num">7+</div>
+      <div class="why-label">Years Experience</div>
+    </div>
+    <div class="why-card">
+      <div class="why-num">24h</div>
+      <div class="why-label">Response Time</div>
+    </div>
+    <div class="why-card">
+      <div class="why-num">100%</div>
+      <div class="why-label">Satisfaction</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section class="contact">
+  <div class="contact-box">
+    <div class="section-tag">Contact Us</div>
+    <h2>Need an Electrician?</h2>
+    <p>Call or WhatsApp us and we'll be at your door as soon as possible.</p>
+    <div class="contact-btns">
+      <a href="https://wa.me/919876543210?text=Hello!%20I%20need%20an%20electrician." class="btn btn-whatsapp" target="_blank">
+        💬 WhatsApp Us
+      </a>
+      <a href="tel:+919876543210" class="btn btn-dark">📞 +91 98765 43210</a>
+    </div>
+    <div class="contact-details">
+      <div class="contact-detail">📍 Kerala, India</div>
+      <div class="contact-detail">🕐 Mon–Sun, 8am–8pm</div>
+      <div class="contact-detail">📧 maria@example.com</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>© 2025 Maria Electro Tech. All rights reserved. &nbsp;|&nbsp; <a href="admin.html">Admin Portal</a></p>
+</footer>
+
+</body>
+</html>

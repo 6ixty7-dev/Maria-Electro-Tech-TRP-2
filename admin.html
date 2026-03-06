@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Job — Maria Electro Tech Admin</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .page-wrap { max-width: 780px; margin: 0 auto; padding: 32px 16px 70px; }
+
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 26px; color: var(--dark); }
+    .page-header p  { color: var(--gray); font-size: 14px; margin-top: 4px; }
+
+    /* Profit preview */
+    .profit-box {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .profit-box .pb-label { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600; }
+    .profit-box .pb-sub   { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 3px; }
+
+    .profit-box .pb-value {
+      font-family: 'Nunito', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      color: white;
+    }
+
+    .submit-row .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+      border-radius: var(--radius);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOCK SCREEN ===== -->
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo"><img src="logo.png" alt="Maria Electro Tech"/></div>
+    <div class="lock-title">Admin Access</div>
+    <div class="lock-sub">Enter your password to continue</div>
+    <input type="password" class="lock-input" id="pwd-input" placeholder="Enter password" onkeyup="checkPwd(event)"/>
+    <button class="btn btn-primary" style="width:100%;" onclick="checkPwd({key:'Enter'})">Unlock →</button>
+    <div class="lock-error" id="pwd-error">❌ Wrong password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN NAV ===== -->
+<nav class="admin-nav">
+  <div class="nav-logo">
+    <img src="logo.png" alt="Logo"/>
+    <div class="nav-logo-text">
+      Maria Electro Tech
+      <small>Admin Portal</small>
+    </div>
+  </div>
+  <div class="admin-nav-links">
+    <a href="admin.html" class="active">➕ <span>Add Job</span></a>
+    <a href="dashboard.html">📊 <span>Dashboard</span></a>
+    <a href="index.html">🌐 <span>Website</span></a>
+  </div>
+</nav>
+
+<!-- ===== FORM ===== -->
+<div class="page-wrap">
+  <div class="page-header">
+    <h1>➕ Add New Job</h1>
+    <p>Fill in all the details below and click Save. Data will be stored in Google Sheets instantly.</p>
+  </div>
+
+  <div class="card">
+
+    <!-- BOOKING DETAILS -->
+    <div class="section-label">📅 Booking Details</div>
+
+    <div class="form-group">
+      <label>Date of Booking *</label>
+      <input type="date" id="f-date" required/>
+    </div>
+
+    <!-- CUSTOMER INFO -->
+    <div class="section-label">👤 Customer Information</div>
+
+    <div class="form-group">
+      <label>Customer Name *</label>
+      <input type="text" id="f-name" placeholder="e.g. Rajan Pillai" required/>
+    </div>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="f-phone" placeholder="+91 98765 43210"/>
+      </div>
+      <div class="form-group">
+        <label>Service Category *</label>
+        <select id="f-category">
+          <option value="">— Select Category —</option>
+          <option value="Electrical">⚡ Electrical</option>
+          <option value="Plumbing">🔧 Plumbing</option>
+          <option value="Carpentry">🪵 Carpentry</option>
+          <option value="Painting">🎨 Painting</option>
+          <option value="AC Service">❄️ AC Service</option>
+          <option value="Other">🔩 Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Customer Address *</label>
+      <input type="text" id="f-address" placeholder="e.g. 15, MG Road, Kochi, Kerala"/>
+    </div>
+
+    <!-- SERVICE DETAILS -->
+    <div class="section-label">🔧 Service Details</div>
+
+    <div class="form-group">
+      <label>Service Description *</label>
+      <textarea id="f-desc" placeholder="Describe the work done in detail. e.g. Replaced 3 switches and 2 sockets in the bedroom. Checked wiring and found no short circuit. Installed new ceiling fan in living room."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Staff Who Attended</label>
+      <input type="text" id="f-staff" placeholder="e.g. Suresh Kumar, Anand M"/>
+    </div>
+
+    <!-- COSTS -->
+    <div class="section-label">💰 Costs & Payment</div>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label>Material Cost (₹)</label>
+        <input type="number" id="f-material" placeholder="0" min="0" oninput="calcProfit()"/>
+      </div>
+      <div class="form-group">
+        <label>Labour Cost (₹)</label>
+        <input type="number" id="f-labour" placeholder="0" min="0" oninput="calcProfit()"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Amount Charged to Customer (₹) *</label>
+      <input type="number" id="f-charged" placeholder="0" min="0" oninput="calcProfit()"/>
+    </div>
+
+    <!-- PROFIT PREVIEW -->
+    <div class="profit-box">
+      <div>
+        <div class="pb-label">Estimated Profit</div>
+        <div class="pb-sub">Amount Charged − Material − Labour</div>
+      </div>
+      <div class="pb-value" id="profit-display">₹ 0</div>
+    </div>
+
+    <div class="form-group">
+      <label>Payment Status *</label>
+      <select id="f-payment">
+        <option value="Pending">🟡 Pending</option>
+        <option value="Paid">🟢 Paid</option>
+      </select>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-row">
+      <button class="btn btn-primary" id="submit-btn" onclick="submitJob()">
+        💾 Save Job to Google Sheet
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="script.js"></script>
+<script>
+  // ⚠️ Change this to your own secret password!
+  const ADMIN_PASSWORD = "maria2025";
+
+  function checkPwd(e) {
+    if (e.key !== 'Enter' && e.type !== 'click') return;
+    const val = document.getElementById('pwd-input').value;
+    if (val === ADMIN_PASSWORD) {
+      document.getElementById('lock-screen').style.display = 'none';
+    } else {
+      document.getElementById('pwd-error').style.display = 'block';
+      document.getElementById('pwd-input').value = '';
+      document.getElementById('pwd-input').focus();
+    }
+  }
+
+  // Set today's date as default
+  document.getElementById('f-date').valueAsDate = new Date();
+
+  function calcProfit() {
+    const mat    = parseFloat(document.getElementById('f-material').value) || 0;
+    const lab    = parseFloat(document.getElementById('f-labour').value)   || 0;
+    const chg    = parseFloat(document.getElementById('f-charged').value)  || 0;
+    const profit = chg - mat - lab;
+    document.getElementById('profit-display').textContent = '₹ ' + profit.toLocaleString('en-IN');
+  }
+
+  async function submitJob() {
+    const required = {
+      'f-date':     'Date of Booking',
+      'f-name':     'Customer Name',
+      'f-phone':    'Phone Number',
+      'f-address':  'Customer Address',
+      'f-category': 'Service Category',
+      'f-desc':     'Service Description',
+      'f-charged':  'Amount Charged'
+    };
+
+    for (const [id, label] of Object.entries(required)) {
+      if (!document.getElementById(id).value.trim()) {
+        showToast('Please fill in: ' + label, 'error');
+        document.getElementById(id).focus();
+        return;
+      }
+    }
+
+    const mat    = parseFloat(document.getElementById('f-material').value) || 0;
+    const lab    = parseFloat(document.getElementById('f-labour').value)   || 0;
+    const chg    = parseFloat(document.getElementById('f-charged').value)  || 0;
+    const profit = chg - mat - lab;
+
+    const data = {
+      date:        document.getElementById('f-date').value,
+      name:        document.getElementById('f-name').value.trim(),
+      phone:       document.getElementById('f-phone').value.trim(),
+      address:     document.getElementById('f-address').value.trim(),
+      category:    document.getElementById('f-category').value,
+      description: document.getElementById('f-desc').value.trim(),
+      staff:       document.getElementById('f-staff').value.trim(),
+      material:    mat,
+      labour:      lab,
+      charged:     chg,
+      profit:      profit,
+      payment:     document.getElementById('f-payment').value
+    };
+
+    const btn = document.getElementById('submit-btn');
+    btn.innerHTML = '<span class="loader"></span> Saving to Sheet...';
+    btn.disabled = true;
+
+    const ok = await saveJobToSheet(data);
+
+    if (ok) {
+      showToast('✅ Job saved to Google Sheet!', 'success');
+      // Reset form
+      ['f-name','f-phone','f-address','f-desc','f-staff','f-material','f-labour','f-charged'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('f-category').value = '';
+      document.getElementById('f-payment').value  = 'Pending';
+      document.getElementById('f-date').valueAsDate = new Date();
+      calcProfit();
+    } else {
+      showToast('❌ Save failed. Check your Script URL in script.js', 'error');
+    }
+
+    btn.innerHTML = '💾 Save Job to Google Sheet';
+    btn.disabled = false;
+  }
+</script>
+</body>
+</html>
