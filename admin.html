@@ -93,10 +93,7 @@
       <div class="form-group">
         <label>Staff Who Attended</label>
         <select id="f-staff">
-          <option value="">— Select Staff —</option>
-          <option>Francis</option>
-          <option>Anoop</option>
-          <option>Rakesh</option>
+          <option value="">— Loading staff... —</option>
         </select>
       </div>
 
@@ -209,6 +206,19 @@
 <script>
   renderNav('add-job');
   document.getElementById('f-date').valueAsDate = new Date();
+
+  // Load staff dynamically from sheet
+  async function loadStaffDropdown() {
+    const list = await fetchStaffList() || [];
+    const sel  = document.getElementById('f-staff');
+    if (!list.length) {
+      sel.innerHTML = '<option value="">— No staff added yet —</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">— Select Staff —</option>' +
+      list.map(s => `<option>${s.name}</option>`).join('');
+  }
+  loadStaffDropdown();
 
   // Check for hash to auto-switch to photos tab
   if (window.location.hash === '#photos') {

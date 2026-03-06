@@ -3,7 +3,7 @@
 //  Updated profit model: Material margin + Labour split
 // ============================================================
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4MruiXHOZh8jizomGImazO5yf5idUjx_KQkL_JrYyb8WgylFUH453DTExlK6ryFyb5g/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxI41At2-GMrk0S8CU0qb04XKsOcR4WgwJeC-M3WWAxkD3V5Ekn2sKYZhV8EPjotaN_nQ/exec";
 
 // ── SAVE JOB (new profit model) ───────────────────────────
 async function saveJobToSheet(data) {
@@ -83,7 +83,32 @@ function toBase64(file) {
   });
 }
 
-// ── TOAST ──────────────────────────────────────────────────
+// ── STAFF LIST (add / remove / fetch) ─────────────────────
+async function fetchStaffList() {
+  try {
+    const res    = await fetch(SCRIPT_URL + "?action=getStaff");
+    const result = await res.json();
+    return result.status === "ok" ? result.data : [];
+  } catch (err) { console.error("fetchStaff:", err); return []; }
+}
+
+async function saveStaffMember(data) {
+  try {
+    const params = new URLSearchParams({ action: "addStaff", ...data });
+    const res    = await fetch(SCRIPT_URL + "?" + params.toString());
+    const result = await res.json();
+    return result.status === "ok";
+  } catch (err) { console.error("saveStaff:", err); return false; }
+}
+
+async function deleteStaffMember(name) {
+  try {
+    const params = new URLSearchParams({ action: "removeStaff", name });
+    const res    = await fetch(SCRIPT_URL + "?" + params.toString());
+    const result = await res.json();
+    return result.status === "ok";
+  } catch (err) { console.error("deleteStaff:", err); return false; }
+}
 function showToast(msg, type = "success") {
   const t = document.getElementById("toast");
   if (!t) return;
