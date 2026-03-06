@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estimate — Maria Electro Tech</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Screen nav wrapper ── */
+    .estimate-wrapper {
+      padding: 24px 16px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Paper look on screen ── */
+    .page-container {
+      width: 210mm;
+      max-width: 100%;
+      min-height: 297mm;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 15mm;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border-radius: 4px;
+      font-family: 'Outfit', sans-serif;
+      margin: 0 auto;
+    }
+
+    /* ── Floating action bar ── */
+    .est-actions {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 20px;
+      position: sticky; top: 68px; z-index: 100;
+      background: var(--bg); padding: 12px 0;
+    }
+
+    .est-btn {
+      background: var(--dark); color: white;
+      border: none; padding: 10px 20px;
+      border-radius: 50px; font-family: 'Nunito', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+      transition: all 0.2s; box-shadow: var(--shadow-sm);
+    }
+    .est-btn:hover { background: var(--black); transform: translateY(-1px); }
+    .est-btn.primary { background: var(--blue); }
+    .est-btn.primary:hover { background: var(--blue-dark); }
+    .est-btn.danger  { background: var(--red); }
+
+    /* ── Estimate content ── */
+    .estimate-title {
+      text-align: center; font-size: 30px; font-weight: 800;
+      color: #000; text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 30px; padding-bottom: 10px;
+      border-bottom: 2px solid #000; font-family: 'Outfit', sans-serif;
+    }
+
+    .header-content { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    .header-left  { width: 60%; }
+    .header-right { width: 35%; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+    .hdr-label { font-size: 12px; font-weight: 700; color: #333; margin-right: 6px; }
+    .hdr-row   { display: flex; align-items: center; margin-bottom: 6px; }
+    .hdr-row input {
+      font-size: 13px; font-weight: 600; border: none;
+      border-bottom: 1px dashed #ccc; padding: 3px 0;
+      background: transparent; font-family: 'Outfit', sans-serif;
+    }
+    .hdr-left-input  { width: 260px; text-align: left; }
+    .hdr-right-input { width: 130px; text-align: right; }
+
+    textarea.addr-input {
+      width: 260px; font-family: 'Outfit', sans-serif;
+      font-size: 12px; padding: 4px; border: 1px solid transparent;
+      border-radius: 4px; resize: none; background: #fbfbfb;
+      min-height: 70px; margin-top: 4px;
+    }
+    textarea.addr-input:hover, textarea.addr-input:focus {
+      background: #fff; border: 1px solid #ddd; outline: none;
+    }
+    input:focus { border-bottom: 1px solid var(--blue) !important; outline: none; }
+
+    /* ── Items table ── */
+    .bill-table {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0 8px; table-layout: fixed;
+      font-family: 'Outfit', sans-serif;
+    }
+    .bill-table th {
+      text-align: left; padding: 8px 8px; border: 1px solid #000;
+      font-weight: 800; font-size: 12px; background: #f0f0f0;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .bill-table td {
+      padding: 3px 4px; vertical-align: top; font-size: 12px;
+      border: 1px solid #000; position: relative;
+    }
+
+    .col-no     { width: 44px; text-align: center; }
+    .col-desc   { }
+    .col-qty    { width: 80px; text-align: center; }
+    .col-rate   { width: 90px; text-align: right; }
+    .col-amt    { width: 100px; text-align: right; }
+    .col-act    { width: 28px; border: none !important; background: transparent !important; }
+
+    .row-input {
+      width: 100%; border: none; padding: 6px 3px;
+      font-size: 12px; font-family: 'Outfit', sans-serif;
+      background: transparent;
+    }
+    .row-input:focus { outline: none; background: rgba(61,184,232,0.05); }
+    textarea.row-input { resize: none; overflow: hidden; min-height: 32px; display: block; white-space: pre-wrap; line-height: 1.4; }
+    .print-desc { display: none; white-space: pre-wrap; word-wrap: break-word; font-size: 12px; padding: 6px 3px; line-height: 1.4; font-family: 'Outfit', sans-serif; }
+
+    .qty-input  { text-align: center; }
+    .rate-input { text-align: right; }
+    .amt-input  { text-align: right; background: #fff; }
+
+    .del-btn { color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 15px; background: none; border: none; padding: 0 4px; opacity: 0.4; transition: opacity 0.2s; }
+    .del-btn:hover { opacity: 1; }
+
+    .add-row-btn {
+      margin-top: 8px; background: transparent;
+      border: 2px dashed var(--blue); color: var(--blue);
+      padding: 7px 14px; border-radius: 4px; cursor: pointer;
+      font-weight: 700; font-size: 13px; transition: all 0.2s;
+    }
+    .add-row-btn:hover { background: var(--blue); color: white; }
+
+    /* ── Totals ── */
+    .totals-section { margin-left: auto; width: 260px; padding-top: 12px; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+    .total-label { font-weight: 700; font-size: 12px; font-family: 'Outfit', sans-serif; }
+    .total-value { font-weight: 700; font-size: 14px; width: 100px; text-align: right; border: 1px solid #777; padding: 3px 5px; background: #fff; border-radius: 2px; font-family: 'Outfit', sans-serif; }
+    .total-value:read-only { background: #fdfdfd; }
+    .balance-val { font-weight: 900; font-size: 17px; color: #000; border: 2px solid #000 !important; }
+    .divider-dash { border-top: 1px dashed #000; margin: 6px 0; opacity: 0.3; }
+
+    .footer-note { margin-top: auto; padding-top: 30px; font-size: 11px; color: #333; text-align: center; font-family: 'Outfit', sans-serif; }
+
+    /* ══════════════════════════════════════════
+       PRINT STYLES — THE BIG FIX
+       ══════════════════════════════════════════ */
+    @media print {
+      /* Hide everything except the estimate paper */
+      body > *:not(.page-container) { display: none !important; }
+      .admin-nav, .estimate-wrapper > .est-actions,
+      .nav-mobile-overlay, .nav-mobile-drawer { display: none !important; }
+
+      html, body {
+        margin: 0 !important; padding: 0 !important;
+        background: white !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .page-container {
+        box-shadow: none !important;
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 10mm 12mm !important;
+        border-radius: 0 !important;
+        display: block !important; /* NOT flex — allows natural page breaks */
+      }
+
+      /* Hide UI controls */
+      .add-row-btn, .col-act, .del-btn,
+      .bill-table th:last-child,
+      .bill-table td:last-child { display: none !important; }
+
+      /* Hide textarea, show print div */
+      textarea.row-input { display: none !important; }
+      .print-desc { display: block !important; border: none !important; }
+
+      /* Clean inputs */
+      input, textarea {
+        border: none !important; border-bottom: 1px solid #ddd !important;
+        background: transparent !important;
+      }
+      .hdr-row input { border-bottom: 1px solid #ccc !important; }
+      textarea.addr-input { border: none !important; background: transparent !important; }
+
+      /* Table print rules — this is the key fix */
+      .bill-table {
+        page-break-inside: auto; /* allow table to break across pages */
+      }
+      .bill-table thead {
+        display: table-header-group; /* repeat header on each page */
+      }
+      .bill-table tr {
+        page-break-inside: avoid; /* never break a row in half */
+        page-break-after: auto;
+      }
+      .bill-table th { background: #f0f0f0 !important; -webkit-print-color-adjust: exact; }
+
+      /* Totals section — never split */
+      .totals-section { page-break-inside: avoid; }
+      .footer-note    { page-break-inside: avoid; }
+
+      /* Total value borders */
+      .total-value  { border: 1px solid #777 !important; background: transparent !important; }
+      .balance-val  { border: 2px solid #000 !important; }
+    }
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+<div class="estimate-wrapper">
+  <!-- ACTION BAR -->
+  <div class="est-actions">
+    <button class="est-btn" onclick="document.getElementById('loadFile').click()">📂 Load JSON</button>
+    <input type="file" id="loadFile" style="display:none;" accept=".json" onchange="loadJSON(event)"/>
+    <button class="est-btn" onclick="saveJSON()">💾 Save JSON</button>
+    <button class="est-btn danger" onclick="resetForm()">🗑️ Clear</button>
+    <button class="est-btn primary" onclick="window.print()">🖨️ Print Estimate</button>
+  </div>
+
+  <!-- PAPER -->
+  <div class="page-container">
+    <h1 class="estimate-title">ESTIMATE</h1>
+
+    <div class="header-content">
+      <div class="header-left">
+        <div class="hdr-row">
+          <span class="hdr-label">Receiver:</span>
+          <input type="text" class="hdr-left-input" placeholder="Customer name" id="receiverName"/>
+        </div>
+        <textarea class="addr-input" id="receiverAddr" placeholder="Address..."></textarea>
+      </div>
+      <div class="header-right">
+        <div class="hdr-row">
+          <span class="hdr-label">Date:</span>
+          <input type="date" class="hdr-right-input" id="dateField"/>
+        </div>
+        <div class="hdr-row" style="margin-top:4px;">
+          <span class="hdr-label">Est. No:</span>
+          <input type="text" class="hdr-right-input" id="estNo" placeholder="001" style="text-align:right;"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <table class="bill-table">
+      <thead>
+        <tr>
+          <th class="col-no">No.</th>
+          <th class="col-desc">Description</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-rate">Rate (₹)</th>
+          <th class="col-amt">Amount (₹)</th>
+          <th class="col-act"></th>
+        </tr>
+      </thead>
+      <tbody id="est-body"></tbody>
+    </table>
+
+    <button class="add-row-btn" onclick="addRow()">+ Add Line Item</button>
+
+    <!-- TOTALS -->
+    <div class="totals-section">
+      <div class="divider-dash"></div>
+      <div class="total-row">
+        <span class="total-label">Total Amount</span>
+        <input type="text" id="totalAmt" class="total-value" readonly value="0.00"/>
+      </div>
+      <div class="total-row">
+        <span class="total-label">Advance Paid</span>
+        <input type="number" id="advanceAmt" class="total-value" placeholder="0" oninput="calcTotals()"/>
+      </div>
+      <div class="divider-dash"></div>
+      <div class="total-row" style="margin-top:12px;">
+        <span class="total-label" style="font-size:14px; font-weight:800;">Balance Due</span>
+        <input type="text" id="balanceAmt" class="total-value balance-val" readonly value="0.00"/>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Thank you for your business! &nbsp;|&nbsp; Maria Electro Tech &nbsp;|&nbsp; Kochi, Kerala
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="script.js"></script>
+<script>
+  renderNav('estimate');
+
+  const tbody = document.getElementById('est-body');
+  document.getElementById('dateField').valueAsDate = new Date();
+
+  function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="col-no"></td>
+       <td class="col-desc">
+         <textarea class="row-input" rows="1" placeholder="Description of work / material" oninput="syncDesc(this)"></textarea>
+         <div class="print-desc"></div>
+       </td>
+       <td class="col-qty"><input type="text" class="row-input qty-input" placeholder="1" oninput="calcRow(this)"/></td>
+       <td class="col-rate"><input type="number" class="row-input rate-input" placeholder="0.00" oninput="calcRow(this)"/></td>
+       <td class="col-amt"><input type="text" class="row-input amt-input" readonly value="0.00"/></td>
+       <td class="col-act"><button class="del-btn" onclick="delRow(this)">×</button></td>`;
+    tbody.appendChild(tr);
+    reindex();
+  }
+
+  function delRow(btn) {
+    const row = btn.closest('tr');
+    if (tbody.children.length > 1) {
+      row.remove(); reindex(); calcTotals();
+    } else {
+      row.querySelectorAll('input,textarea').forEach(i=>i.value='');
+      row.querySelector('.print-desc').textContent = '';
+      row.querySelector('.amt-input').value = '0.00';
+      calcTotals();
+    }
+  }
+
+  function reindex() {
+    tbody.querySelectorAll('tr').forEach((r,i)=>{
+      const c = r.querySelector('.col-no'); if(c) c.textContent = i+1;
+    });
+  }
+
+  function syncDesc(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+    const d = ta.nextElementSibling;
+    if (d) d.textContent = ta.value;
+  }
+
+  function calcRow(input) {
+    const row = input.closest('tr');
+    const qtyRaw = row.querySelector('.qty-input').value.toString().toUpperCase();
+    const rate   = parseFloat(row.querySelector('.rate-input').value) || 0;
+    const qty    = qtyRaw === 'LS' ? 1 : (parseFloat(qtyRaw) || 0);
+    row.querySelector('.amt-input').value = (qty * rate).toFixed(2);
+    calcTotals();
+  }
+
+  function calcTotals() {
+    let total = 0;
+    tbody.querySelectorAll('.amt-input').forEach(i=>{ total += parseFloat(i.value)||0; });
+    const adv = parseFloat(document.getElementById('advanceAmt').value)||0;
+    document.getElementById('totalAmt').value   = total.toFixed(2);
+    document.getElementById('balanceAmt').value = (total - adv).toFixed(2);
+  }
+
+  function resetForm() {
+    if (!confirm('Clear the estimate form?')) return;
+    document.querySelectorAll('.page-container input, .page-container textarea').forEach(el=>{
+      if (el.id !== 'dateField') el.value = '';
+      if (el.tagName === 'TEXTAREA') el.style.height = 'auto';
+    });
+    document.querySelectorAll('.print-desc').forEach(d=>d.textContent='');
+    document.getElementById('dateField').valueAsDate = new Date();
+    tbody.innerHTML = ''; addRow(); calcTotals();
+  }
+
+  function saveJSON() {
+    const items = [];
+    tbody.querySelectorAll('tr').forEach(row=>{
+      const desc = row.querySelector('.col-desc textarea').value;
+      const qty  = row.querySelector('.qty-input').value;
+      const rate = row.querySelector('.rate-input').value;
+      if (desc||qty||rate) items.push({desc,qty,rate});
+    });
+    const data = {
+      receiverName: document.getElementById('receiverName').value,
+      receiverAddr: document.getElementById('receiverAddr').value,
+      date:         document.getElementById('dateField').value,
+      estNo:        document.getElementById('estNo').value,
+      advance:      document.getElementById('advanceAmt').value,
+      items
+    };
+    const a = document.createElement('a');
+    a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data,null,2));
+    a.download = 'estimate_' + (data.estNo || Date.now()) + '.json';
+    a.click();
+  }
+
+  function loadJSON(event) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const d = JSON.parse(e.target.result);
+        document.getElementById('receiverName').value = d.receiverName || '';
+        document.getElementById('receiverAddr').value = d.receiverAddr || '';
+        if (d.date) document.getElementById('dateField').value = d.date;
+        document.getElementById('estNo').value      = d.estNo    || '';
+        document.getElementById('advanceAmt').value = d.advance  || '';
+        tbody.innerHTML = '';
+        (d.items||[]).forEach(item=>{
+          addRow();
+          const last = tbody.lastElementChild;
+          const ta   = last.querySelector('.col-desc textarea');
+          ta.value   = item.desc||''; syncDesc(ta);
+          last.querySelector('.qty-input').value  = item.qty  || '';
+          last.querySelector('.rate-input').value = item.rate || '';
+          calcRow(last.querySelector('.qty-input'));
+        });
+        if(!(d.items||[]).length) addRow();
+        calcTotals();
+        showToast('✅ Estimate loaded!','success');
+      } catch(err) { showToast('❌ Invalid file','error'); }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  // Init
+  addRow();
+</script>
+</body>
+</html>

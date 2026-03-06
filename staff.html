@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff — Maria Electro Tech</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .staff-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; margin-bottom:28px; }
+
+    .staff-card {
+      background:var(--white); border-radius:var(--radius-lg);
+      box-shadow:var(--shadow); border:1px solid var(--border);
+      overflow:hidden;
+    }
+    .staff-card-header {
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      padding:16px 20px; display:flex; align-items:center; gap:12px;
+    }
+    .staff-avatar {
+      width:44px;height:44px; border-radius:50%;
+      background:rgba(255,255,255,0.2);
+      font-family:'Nunito',sans-serif; font-weight:900; font-size:18px;
+      color:white; display:flex; align-items:center; justify-content:center;
+      border:2px solid rgba(255,255,255,0.4);
+    }
+    .staff-name { font-family:'Nunito',sans-serif; font-weight:900; font-size:17px; color:white; }
+    .staff-sub  { font-size:12px; color:rgba(255,255,255,0.6); margin-top:2px; }
+
+    .staff-card-body { padding:16px 20px; }
+    .sc-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--gray-light); font-size:14px; }
+    .sc-row:last-child { border-bottom:none; }
+    .sc-label { color:var(--gray-dark); font-weight:600; }
+    .sc-val { font-family:'Nunito',sans-serif; font-weight:800; }
+    .sc-val.green { color:var(--green-text); }
+    .sc-val.red   { color:var(--red); }
+    .sc-val.blue  { color:var(--blue-deeper); }
+
+    .payout-row {
+      background:var(--blue-light); border-radius:var(--radius-sm);
+      padding:12px 16px; display:flex; justify-content:space-between;
+      align-items:center; margin-top:10px;
+    }
+    .payout-label { font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; color:var(--dark); }
+    .payout-val   { font-family:'Nunito',sans-serif; font-weight:900; font-size:22px; color:var(--blue); }
+
+    /* Add expense modal */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:500; display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:var(--white); border-radius:var(--radius-xl); padding:32px; width:100%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+    .modal-title { font-family:'Nunito',sans-serif; font-size:20px; font-weight:900; color:var(--dark); margin-bottom:20px; }
+    .modal-close { float:right; background:none; border:none; font-size:22px; cursor:pointer; color:var(--gray); line-height:1; }
+
+    /* Expenses table */
+    .expense-badge-adv { background:#FEF3C7; color:#92400E; }
+    .expense-badge-ded { background:#FEE2E2; color:#991B1B; }
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+<div class="page-wrap">
+  <!-- TOP ROW -->
+  <div class="page-top">
+    <div><h1>👷 Staff & Payroll</h1><p>Weekly earnings, advances, deductions, and final payout.</p></div>
+    <button class="btn btn-primary" onclick="openExpenseModal()">➕ Add Advance / Deduction</button>
+  </div>
+
+  <!-- WEEK SELECTOR -->
+  <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap;">
+    <div class="week-selector">
+      <button onclick="changeWeek(-1)">←</button>
+      <span class="ws-label">Week:</span>
+      <span class="ws-range" id="ws-range">Loading...</span>
+      <button onclick="changeWeek(1)">→</button>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="changeWeek(0, true)">Today's Week</button>
+  </div>
+
+  <!-- STAFF CARDS -->
+  <div class="staff-grid" id="staff-grid">
+    <div class="empty-state" style="grid-column:1/-1"><span class="es-icon">⏳</span><p>Loading...</p></div>
+  </div>
+
+  <!-- EXPENSES TABLE -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <h3>📒 Advances & Deductions — <span id="exp-week-label" style="color:var(--blue)">this week</span></h3>
+      <button class="btn btn-primary btn-sm" onclick="openExpenseModal()">➕ Add Entry</button>
+    </div>
+    <div id="expenses-container">
+      <div class="empty-state"><span class="es-icon">⏳</span><p>Loading...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD EXPENSE MODAL -->
+<div class="modal-overlay" id="expense-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeExpenseModal()">×</button>
+    <div class="modal-title">➕ Add Advance or Deduction</div>
+    <div class="form-group">
+      <label>Date *</label>
+      <input type="date" id="e-date"/>
+    </div>
+    <div class="form-group">
+      <label>Staff Member *</label>
+      <select id="e-staff">
+        <option value="">— Select —</option>
+        <option>Francis</option>
+        <option>Anoop</option>
+        <option>Rakesh</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Type *</label>
+      <select id="e-type">
+        <option value="">— Select —</option>
+        <option value="Advance">💰 Advance</option>
+        <option value="Deduction">➖ Deduction</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Amount (₹) *</label>
+      <input type="number" id="e-amount" placeholder="0" min="0"/>
+    </div>
+    <div class="form-group">
+      <label>Note / Reason</label>
+      <input type="text" id="e-note" placeholder="e.g. Advance for personal expense"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn btn-outline" onclick="closeExpenseModal()" style="flex:1;">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()" style="flex:2;" id="exp-save-btn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="script.js"></script>
+<script>
+  renderNav('staff');
+
+  const STAFF = ['Francis','Anoop','Rakesh'];
+  let weekOffset = 0;
+  let allJobs = [], allExpenses = [];
+
+  async function init() {
+    document.getElementById('e-date').valueAsDate = new Date();
+    [allJobs, allExpenses] = await Promise.all([
+      fetchJobsFromSheet(),
+      fetchStaffExpenses()
+    ]);
+    allJobs      = allJobs      || [];
+    allExpenses  = allExpenses  || [];
+    render();
+  }
+
+  function changeWeek(dir, reset = false) {
+    if (reset) weekOffset = 0;
+    else weekOffset += dir;
+    render();
+  }
+
+  function render() {
+    const { start, end } = getWeekRange(weekOffset);
+    const s = formatDateDisplay(start);
+    const e = formatDateDisplay(end);
+    document.getElementById('ws-range').textContent = `${s} – ${e}`;
+    document.getElementById('exp-week-label').textContent = `${s} – ${e}`;
+
+    // Filter jobs and expenses in this week
+    const weekJobs = allJobs.filter(j => inRange(String(j[0]).substring(0,10), start, end));
+    const weekExps = allExpenses.filter(ex => inRange(String(ex[0]).substring(0,10), start, end));
+
+    renderStaffCards(weekJobs, weekExps);
+    renderExpensesTable(weekExps);
+  }
+
+  function renderStaffCards(jobs, expenses) {
+    const grid = document.getElementById('staff-grid');
+
+    if (!jobs.length && !expenses.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <span class="es-icon">📭</span>
+        <p>No jobs or expenses recorded for this week.</p>
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = STAFF.map(name => {
+      // Labour earnings from jobs (staff cut column = index 10)
+      const myJobs    = jobs.filter(j => String(j[6]).toLowerCase().includes(name.toLowerCase()));
+      const earnings  = myJobs.reduce((s,j) => s + (parseFloat(j[10])||0), 0);
+      const jobCount  = myJobs.length;
+
+      // Advances and deductions
+      const myExps    = expenses.filter(ex => String(ex[1]).toLowerCase().includes(name.toLowerCase()));
+      const advance   = myExps.filter(ex=>ex[2]==='Advance').reduce((s,ex)=>s+(parseFloat(ex[3])||0),0);
+      const deduction = myExps.filter(ex=>ex[2]==='Deduction').reduce((s,ex)=>s+(parseFloat(ex[3])||0),0);
+      const payout    = earnings - advance - deduction;
+
+      return `
+        <div class="staff-card">
+          <div class="staff-card-header">
+            <div class="staff-avatar">${name[0]}</div>
+            <div>
+              <div class="staff-name">${name}</div>
+              <div class="staff-sub">${jobCount} job${jobCount!==1?'s':''} this week</div>
+            </div>
+          </div>
+          <div class="staff-card-body">
+            <div class="sc-row">
+              <span class="sc-label">💼 Job Earnings</span>
+              <span class="sc-val green">${fmt(earnings)}</span>
+            </div>
+            <div class="sc-row">
+              <span class="sc-label">💰 Advance Taken</span>
+              <span class="sc-val red">− ${fmt(advance)}</span>
+            </div>
+            <div class="sc-row">
+              <span class="sc-label">➖ Deductions</span>
+              <span class="sc-val red">− ${fmt(deduction)}</span>
+            </div>
+            <div class="payout-row">
+              <span class="payout-label">🏦 Final Payout</span>
+              <span class="payout-val" style="color:${payout>=0?'var(--blue)':'var(--red)'}">
+                ${fmt(payout)}
+              </span>
+            </div>
+            <div style="margin-top:10px;">
+              <button class="btn btn-outline btn-sm" style="width:100%;" onclick="openExpenseModal('${name}')">
+                ➕ Add Advance / Deduction
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderExpensesTable(expenses) {
+    const c = document.getElementById('expenses-container');
+    if (!expenses.length) {
+      c.innerHTML = `<div class="empty-state"><span class="es-icon">📭</span><p>No entries this week.</p></div>`;
+      return;
+    }
+    const sorted = [...expenses].reverse();
+    c.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Date</th><th>Staff</th><th>Type</th><th>Amount</th><th>Note</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map(ex=>`<tr>
+          <td>${ex[0]||'—'}</td>
+          <td><strong>${ex[1]||'—'}</strong></td>
+          <td><span class="badge ${ex[2]==='Advance'?'expense-badge-adv':'expense-badge-ded'}">${ex[2]==='Advance'?'💰 Advance':'➖ Deduction'}</span></td>
+          <td><strong>${fmt(ex[3])}</strong></td>
+          <td style="color:var(--gray)">${ex[4]||'—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  // ── MODAL ──
+  function openExpenseModal(staffName = '') {
+    document.getElementById('expense-modal').classList.add('open');
+    document.getElementById('e-date').valueAsDate = new Date();
+    if (staffName) document.getElementById('e-staff').value = staffName;
+  }
+
+  function closeExpenseModal() {
+    document.getElementById('expense-modal').classList.remove('open');
+    ['e-staff','e-type','e-amount','e-note'].forEach(id => document.getElementById(id).value='');
+  }
+
+  async function saveExpense() {
+    const req = {'e-date':'Date','e-staff':'Staff','e-type':'Type','e-amount':'Amount'};
+    for (const [id,label] of Object.entries(req)) {
+      if (!document.getElementById(id).value.trim()) {
+        showToast('Please fill: '+label,'error'); return;
+      }
+    }
+    const btn = document.getElementById('exp-save-btn');
+    btn.innerHTML='<span class="loader"></span> Saving...'; btn.disabled=true;
+
+    const ok = await saveStaffExpense({
+      date:   document.getElementById('e-date').value,
+      staff:  document.getElementById('e-staff').value,
+      type:   document.getElementById('e-type').value,
+      amount: document.getElementById('e-amount').value,
+      note:   document.getElementById('e-note').value
+    });
+
+    if (ok) {
+      showToast('✅ Saved!','success');
+      allExpenses = await fetchStaffExpenses() || [];
+      closeExpenseModal();
+      render();
+    } else {
+      showToast('❌ Save failed.','error');
+    }
+    btn.innerHTML='💾 Save'; btn.disabled=false;
+  }
+
+  init();
+</script>
+</body>
+</html>

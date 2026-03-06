@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice — Maria Electro Tech</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ── Page layout ── */
+    .invoice-wrapper { padding: 24px 16px 60px; max-width: 960px; margin: 0 auto; }
+
+    /* ── Sticky action bar ── */
+    .inv-actions {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+      position: sticky; top: 68px; z-index: 100;
+      background: var(--bg); padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .inv-btn {
+      background: var(--dark); color: white;
+      border: none; padding: 10px 18px; border-radius: 50px;
+      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 7px;
+      transition: all 0.2s; box-shadow: var(--shadow-sm);
+    }
+    .inv-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .inv-btn.blue   { background: var(--blue); }
+    .inv-btn.green  { background: #16A34A; }
+    .inv-btn.purple { background: #7C3AED; }
+    .inv-btn.red    { background: var(--red); }
+
+    /* ── Invoice paper ── */
+    .inv-paper {
+      background: #fff;
+      font-family: 'Inter', 'Mulish', sans-serif;
+      font-size: 13px;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 12mm 14mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      border-radius: 4px;
+    }
+
+    /* ── Header ── */
+    .inv-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+    .inv-header h1 { font-size: 18px; font-weight: 900; color: #1e40af; margin-bottom: 2px; }
+    .inv-header .addr { font-size: 11px; color: #444; line-height: 1.5; margin-bottom: 2px; }
+    .inv-header .inv-label { font-size: 16px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-top: 6px; border-top: 2px solid #333; border-bottom: 2px solid #333; padding: 3px 0; }
+
+    .gstin-row { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+    .gstin-row input { font-size: 11px; border: none; border-bottom: 1px dashed #ccc; background: transparent; font-weight: 700; font-family: inherit; padding: 1px 0; }
+
+    /* ── Meta grid ── */
+    .inv-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-bottom: 8px; }
+    .meta-item { display: flex; align-items: baseline; gap: 5px; }
+    .meta-label { font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+    .meta-input { flex: 1; border: none; border-bottom: 1px dashed #ccc; font-size: 11px; font-family: inherit; background: transparent; min-width: 0; padding: 1px 2px; }
+
+    /* ── Bill-to / Ship-to ── */
+    .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; font-size: 11px; }
+    .party-box { border: 1px solid #ddd; border-radius: 4px; padding: 6px 8px; background: #fafafa; line-height: 1.6; }
+    .party-box strong { display: block; font-size: 12px; margin-bottom: 3px; }
+    .party-box textarea { width: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit; resize: none; line-height: 1.5; padding: 1px 0; }
+    .party-box textarea:focus { outline: none; }
+    .party-box input  { width: 100%; border: none; border-bottom: 1px dashed #ccc; background: transparent; font-size: 11px; font-family: inherit; padding: 1px 0; }
+    .party-box input:focus { outline: none; }
+
+    /* ── Items table ── */
+    .inv-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; }
+    .inv-table thead tr { background: #EEF2FF; border-top: 2px solid #222; border-bottom: 2px solid #222; }
+    .inv-table th, .inv-table td { padding: 4px 5px; border: 1px solid #ddd; }
+    .inv-table th { font-size: 10px; font-weight: 800; text-transform: uppercase; }
+    .inv-table td input { width: 100%; border: none; background: transparent; font-size: 11px; font-family: inherit; padding: 2px 0; }
+    .inv-table td input:focus { outline: none; background: #f0f9ff; }
+    .inv-table .amount { font-weight: 700; text-align: right; white-space: nowrap; }
+
+    .col-sno  { width: 4%;  text-align: center; }
+    .col-desc { width: 40%; }
+    .col-hsn  { width: 10%; text-align: center; }
+    .col-uom  { width: 6%;  text-align: center; }
+    .col-qty  { width: 8%;  text-align: center; }
+    .col-rate { width: 12%; text-align: right; }
+    .col-amt  { width: 20%; text-align: right; }
+    .col-act  { width: 46px; border: none !important; background: transparent !important; }
+
+    .row-action-btns { display: inline-flex; gap: 4px; margin-left: 4px; vertical-align: middle; }
+    .row-action-btns button { background: none; border: none; cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; }
+    .row-action-btns .ins-btn { color: #16A34A; }
+    .row-action-btns .del-row { color: var(--red); }
+
+    .add-row-btn {
+      margin-top: 8px; background: transparent;
+      border: 2px dashed var(--blue); color: var(--blue);
+      padding: 6px 14px; border-radius: 4px; cursor: pointer;
+      font-weight: 700; font-size: 12px; transition: all 0.2s;
+    }
+    .add-row-btn:hover { background: var(--blue); color: white; }
+
+    /* ── Totals ── */
+    .inv-footer { display: grid; grid-template-columns: 1fr 280px; gap: 20px; margin-top: 14px; font-size: 11px; }
+    .bank-box { border: 1px solid #ddd; border-radius: 4px; padding: 8px; background: #fafafa; line-height: 1.7; }
+    .bank-box strong { display: block; margin-bottom: 4px; font-size: 12px; }
+    .bank-box input { width: 100%; border: none; border-bottom: 1px dashed #ccc; background: transparent; font-size: 11px; font-family: inherit; padding: 1px 0; }
+
+    .totals-box { font-size: 11px; }
+    .t-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #eee; }
+    .t-row:last-child { border-bottom: none; }
+    .t-row.grand { font-weight: 900; font-size: 13px; border-top: 2px solid #222; padding-top: 6px; margin-top: 4px; }
+    .t-val { font-weight: 700; font-family: 'Courier New', monospace; }
+
+    .tax-input-row { display: flex; align-items: center; gap: 4px; font-size: 11px; }
+    .tax-input-row input { width: 44px; border: 1px solid #ddd; border-radius: 3px; padding: 2px 4px; font-size: 11px; text-align: right; }
+
+    .words-row { font-size: 11px; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 3px; margin-bottom: 8px; }
+
+    .signature-box { text-align: center; margin-top: 32px; }
+    .signature-box .sig-line { font-weight: 700; border-top: 1px solid #333; display: inline-block; padding: 2px 24px; }
+    .signature-box .sig-sub  { font-style: italic; font-size: 11px; color: #666; margin-top: 16px; display: block; }
+
+    /* ══════════════════════════════════════
+       PRINT STYLES — COMPLETE FIX
+       The key: hide screen UI, show #printPages
+       ══════════════════════════════════════ */
+    @media print {
+      /* Hide absolutely everything on body */
+      body > *       { display: none !important; }
+
+      /* Show ONLY the print pages container */
+      #printPages    { display: block !important; }
+
+      html, body {
+        margin: 0 !important; padding: 0 !important;
+        background: white !important;
+        font-family: 'Inter', Arial, sans-serif;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      /* Each page */
+      .print-page {
+        width: 210mm;
+        max-width: 100%;
+        min-height: 297mm;
+        height: auto;
+        box-sizing: border-box;
+        padding: 8mm 10mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: block;
+        font-family: 'Inter', Arial, sans-serif;
+      }
+      .print-page:last-child { page-break-after: auto; }
+      .print-page * { font-size: 9.5pt !important; line-height: 1.3 !important; }
+      .print-page h1 { font-size: 15pt !important; }
+      .print-page h2 { font-size: 12pt !important; }
+
+      /* Table: allow rows to flow across pages cleanly */
+      .print-page table { border-collapse: collapse; width: 100%; }
+      .print-page table thead { display: table-header-group; } /* repeat header on new pages */
+      .print-page table tbody tr { page-break-inside: avoid; page-break-after: auto; }
+      .print-page table th, .print-page table td { padding: 2px 4px !important; font-size: 9pt !important; }
+
+      /* Footer section never splits */
+      .summary-block { break-inside: avoid; page-break-inside: avoid; }
+      .footer-flex-container { display: flex !important; justify-content: space-between !important; }
+    }
+  </style>
+</head>
+<body>
+<script src="nav.js"></script>
+
+<div class="invoice-wrapper">
+  <!-- ACTION BAR -->
+  <div class="inv-actions">
+    <button class="inv-btn green" onclick="addRow()">➕ Add Line</button>
+    <button class="inv-btn blue" onclick="recompute()">🔄 Recalculate</button>
+    <button class="inv-btn purple" onclick="saveJSON()">💾 Save JSON</button>
+    <button class="inv-btn" onclick="document.getElementById('loadFile').click()">📂 Load JSON</button>
+    <input type="file" id="loadFile" style="display:none;" accept=".json" onchange="loadJSON(event)"/>
+    <button class="inv-btn" onclick="resetForm()">🗑️ Clear</button>
+    <button class="inv-btn blue" onclick="window.print()">🖨️ Print Invoice</button>
+  </div>
+
+  <!-- INVOICE PAPER -->
+  <div class="inv-paper">
+    <!-- HEADER -->
+    <div class="inv-header">
+      <h1>Maria Electrotech</h1>
+      <div class="addr">
+        61/3623, 39/4379-A-2, Swarna Building, Valanjambalam Junction, Cochin<br/>
+        Mob: 9847192829, 8547364420 &nbsp;|&nbsp; Email: christopherreynold71@gmail.com
+      </div>
+      <div class="gstin-row">GSTIN: <input type="text" id="gstin" value="32AIPPC5009A1ZZ" style="width:160px;"/></div>
+      <div class="inv-label">Invoice</div>
+    </div>
+
+    <div style="text-align:right; font-size:11px; margin-bottom:6px;">
+      <strong style="border:1px solid #333; padding:2px 8px; border-radius:3px;">Original for Recipient</strong>
+    </div>
+
+    <!-- META INFO -->
+    <div class="inv-meta">
+      <div class="meta-item"><span class="meta-label">Reverse Charge:</span><input class="meta-input" id="rcm" value="No"/></div>
+      <div class="meta-item"><span class="meta-label">Transportation Mode:</span><input class="meta-input" id="transportMode"/></div>
+      <div class="meta-item"><span class="meta-label">Invoice No.:</span><input class="meta-input" id="invoiceNo" value="1515"/></div>
+      <div class="meta-item"><span class="meta-label">Vehicle Number:</span><input class="meta-input" id="vehicleNumber"/></div>
+      <div class="meta-item"><span class="meta-label">Invoice Date:</span><input class="meta-input" type="date" id="invoiceDate"/></div>
+      <div class="meta-item"><span class="meta-label">Date of Supply:</span><input class="meta-input" type="date" id="dateOfSupply"/></div>
+      <div class="meta-item"><span class="meta-label">State Code:</span><input class="meta-input" id="stateCode" value="32" style="width:40px;"/>  <span style="font-weight:700;">State: Kerala</span></div>
+      <div class="meta-item"><span class="meta-label">Place of Supply:</span><input class="meta-input" id="placeOfSupply" value="Cochin"/></div>
+    </div>
+
+    <!-- BILL TO / SHIP TO -->
+    <div class="party-grid">
+      <div class="party-box">
+        <strong>Details of Receiver — Bill To</strong>
+        Name: <input id="billName" placeholder="Customer name"/><br/>
+        Address: <textarea id="billAddr" rows="2" placeholder="Address..."></textarea>
+        GSTIN: <input id="receiverGstin" placeholder="GSTIN (if any)"/>
+      </div>
+      <div class="party-box">
+        <strong>Details of Consignee — Ship To</strong>
+        <textarea id="shipNameAddr" rows="5" placeholder="Name and address of site / consignee..."></textarea>
+      </div>
+    </div>
+
+    <!-- ITEMS TABLE -->
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th class="col-sno">S.No</th>
+          <th class="col-desc">Description</th>
+          <th class="col-hsn">HSN/SAC</th>
+          <th class="col-uom">UOM</th>
+          <th class="col-qty">Qty</th>
+          <th class="col-rate">Rate (₹)</th>
+          <th class="col-amt">Amount (₹)</th>
+          <th class="col-act"></th>
+        </tr>
+      </thead>
+      <tbody id="itemRows"></tbody>
+    </table>
+
+    <button class="add-row-btn" onclick="addRow()">+ Add Line Item</button>
+
+    <!-- FOOTER -->
+    <div class="inv-footer">
+      <!-- LEFT: Amount in words + Bank details -->
+      <div>
+        <div class="words-row">Amount in Words: <span id="amountWords" style="font-style:italic;"></span></div>
+        <div class="bank-box">
+          <strong>Bank Details</strong>
+          Bank Name: <input id="bankName" value="FEDERAL BANK, Ernakulam South Br."/><br/>
+          Account No: <input id="accountNumber" value="11530200020595"/><br/>
+          IFSC Code: <input id="ifscCode" value="FDRL0001153"/>
+          <p style="margin-top:8px; font-weight:700; font-size:11px;">Terms & Conditions:</p>
+          <p style="font-style:italic; font-size:10px;">Certified that the particulars given above are true and correct. E. &amp; O. E.</p>
+        </div>
+      </div>
+      <!-- RIGHT: GST totals + Signature -->
+      <div>
+        <div class="totals-box">
+          <div class="t-row"><span>Subtotal</span><span class="t-val" id="subtotal">0.00</span></div>
+          <div class="t-row"><span>Total Before Tax</span><span class="t-val" id="beforeTax">0.00</span></div>
+          <div class="t-row">
+            <span><div class="tax-input-row">CGST (<input type="number" id="cgstPercent" value="9" min="0" max="100" oninput="recompute()"/>%)</div></span>
+            <span class="t-val" id="cgstAmount">0.00</span>
+          </div>
+          <div class="t-row">
+            <span><div class="tax-input-row">SGST (<input type="number" id="sgstPercent" value="9" min="0" max="100" oninput="recompute()"/>%)</div></span>
+            <span class="t-val" id="sgstAmount">0.00</span>
+          </div>
+          <div class="t-row"><span>Tax Amount (GST)</span><span class="t-val" id="taxAmount">0.00</span></div>
+          <div class="t-row grand"><span>Total After Tax</span><span class="t-val" id="grandTotal">0.00</span></div>
+        </div>
+        <div class="signature-box">
+          <div class="sig-line">For Maria Electrotech</div>
+          <span class="sig-sub">Authorised Signatory</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT-ONLY CONTAINER (built dynamically on Ctrl+P) -->
+<div id="printPages"></div>
+
+<div id="toast"></div>
+<script src="script.js"></script>
+<script>
+  renderNav('invoice');
+
+  const tbody = document.getElementById('itemRows');
+
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('invoiceDate').value  = today;
+  document.getElementById('dateOfSupply').value = today;
+
+  // ── NUMBER TO WORDS ──────────────────────────────────────
+  function toWordsIndian(num) {
+    num = parseFloat(num);
+    if (isNaN(num) || num === 0) return 'ZERO RUPEES ONLY';
+    const intPart = Math.floor(num);
+    const decPart = Math.round((num - intPart) * 100);
+    const w  = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+    const t  = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+    function two(n) { return n < 20 ? w[n] : t[Math.floor(n/10)] + (n%10 ? ' '+w[n%10] : ''); }
+    let out='', n=intPart;
+    const cr=Math.floor(n/10000000); n%=10000000;
+    const la=Math.floor(n/100000);   n%=100000;
+    const th=Math.floor(n/1000);     n%=1000;
+    const hr=n;
+    if(cr) out+=two(cr)+' crore ';
+    if(la) out+=two(la)+' lakh ';
+    if(th) out+=two(th)+' thousand ';
+    if(hr){ const h=Math.floor(hr/100); const r=hr%100; if(h) out+=w[h]+' hundred'; if(r) out+=(out.endsWith('hundred')?' and ':(out?'':' '))+two(r); }
+    let s=out.trim();
+    if(decPart) s+=(s?' and ':'')+two(decPart)+' paise';
+    return s ? s.toUpperCase()+' ONLY' : 'ZERO RUPEES ONLY';
+  }
+
+  function escapeHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── ROW MANAGEMENT ───────────────────────────────────────
+  function createRowHTML(data, idx) {
+    const isLS   = String(data.qty||'').toUpperCase() === 'LS';
+    const qty    = isLS ? 'LS' : String(data.qty||'1');
+    const amount = isLS ? (parseFloat(data.rate)||0) : (parseFloat(qty)||0)*(parseFloat(data.rate)||0);
+    return `
+      <td class="col-sno">${idx}</td>
+      <td class="col-desc"><input type="text" class="desc" value="${escapeHtml(data.desc||'')}" placeholder="Item description" oninput="recompute()"/></td>
+      <td class="col-hsn"><input type="text" class="hsn" value="${escapeHtml(data.hsn||'')}" placeholder="HSN" oninput="recompute()"/></td>
+      <td class="col-uom"><input type="text" class="uom" value="${escapeHtml(data.uom||'NOS')}" placeholder="UOM" oninput="recompute()"/></td>
+      <td class="col-qty"><input type="text" class="qty" value="${qty}" oninput="calcRow(this)"/></td>
+      <td class="col-rate"><input type="number" class="rate" value="${parseFloat(data.rate||0).toFixed(2)}" min="0" step="0.01" oninput="calcRow(this)"/></td>
+      <td class="col-amt amount">${fmtN(amount)}</td>
+      <td class="col-act">
+        <div class="row-action-btns">
+          <button class="ins-btn" onclick="insertRowAfter(this)" title="Insert row below">➕</button>
+          <button class="del-row" onclick="removeRow(this)" title="Delete row">✕</button>
+        </div>
+      </td>`;
+  }
+
+  function fmtN(n) {
+    return Number(n).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function addRow(data = {}) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = createRowHTML(data, tbody.children.length + 1);
+    tbody.appendChild(tr);
+    reindex(); recompute();
+  }
+
+  function insertRowAfter(btn) {
+    const cur  = btn.closest('tr');
+    const newR = document.createElement('tr');
+    newR.innerHTML = createRowHTML({}, 0);
+    if (cur.nextSibling) tbody.insertBefore(newR, cur.nextSibling);
+    else tbody.appendChild(newR);
+    reindex(); recompute();
+  }
+
+  function removeRow(btn) { btn.closest('tr').remove(); reindex(); recompute(); }
+
+  function reindex() {
+    tbody.querySelectorAll('tr').forEach((r,i)=>{
+      const c = r.querySelector('.col-sno'); if(c) c.textContent = i+1;
+    });
+  }
+
+  function calcRow(input) {
+    const row  = input.closest('tr');
+    const qty  = row.querySelector('.qty').value.toUpperCase() === 'LS' ? 1 : (parseFloat(row.querySelector('.qty').value)||0);
+    const rate = parseFloat(row.querySelector('.rate').value)||0;
+    row.querySelector('.amount').textContent = fmtN(qty * rate);
+    recompute();
+  }
+
+  // ── RECOMPUTE TOTALS ─────────────────────────────────────
+  function recompute() {
+    let sub = 0;
+    tbody.querySelectorAll('.amount').forEach(c => { sub += parseFloat(c.textContent.replace(/,/g,''))||0; });
+    const cgstP = parseFloat(document.getElementById('cgstPercent').value)||0;
+    const sgstP = parseFloat(document.getElementById('sgstPercent').value)||0;
+    const cgst  = sub * cgstP / 100;
+    const sgst  = sub * sgstP / 100;
+    const tax   = cgst + sgst;
+    const grand = sub + tax;
+    document.getElementById('subtotal').textContent    = fmtN(sub);
+    document.getElementById('beforeTax').textContent   = fmtN(sub);
+    document.getElementById('cgstAmount').textContent  = fmtN(cgst);
+    document.getElementById('sgstAmount').textContent  = fmtN(sgst);
+    document.getElementById('taxAmount').textContent   = fmtN(tax);
+    document.getElementById('grandTotal').textContent  = fmtN(grand);
+    document.getElementById('amountWords').textContent = toWordsIndian(grand.toFixed(2));
+  }
+
+  // ── SAVE / LOAD JSON ─────────────────────────────────────
+  function saveJSON() {
+    const items = [...tbody.querySelectorAll('tr')].map(r => ({
+      desc: r.querySelector('.desc').value,
+      hsn:  r.querySelector('.hsn').value,
+      uom:  r.querySelector('.uom').value,
+      qty:  r.querySelector('.qty').value,
+      rate: parseFloat(r.querySelector('.rate').value)||0
+    }));
+    const data = {
+      gstin:         document.getElementById('gstin').value,
+      invoiceNo:     document.getElementById('invoiceNo').value,
+      invoiceDate:   document.getElementById('invoiceDate').value,
+      rcm:           document.getElementById('rcm').value,
+      transportMode: document.getElementById('transportMode').value,
+      vehicleNumber: document.getElementById('vehicleNumber').value,
+      dateOfSupply:  document.getElementById('dateOfSupply').value,
+      placeOfSupply: document.getElementById('placeOfSupply').value,
+      stateCode:     document.getElementById('stateCode').value,
+      billName:      document.getElementById('billName').value,
+      billAddr:      document.getElementById('billAddr').value,
+      receiverGstin: document.getElementById('receiverGstin').value,
+      shipNameAddr:  document.getElementById('shipNameAddr').value,
+      bankName:      document.getElementById('bankName').value,
+      accountNumber: document.getElementById('accountNumber').value,
+      ifscCode:      document.getElementById('ifscCode').value,
+      cgstPercent:   document.getElementById('cgstPercent').value,
+      sgstPercent:   document.getElementById('sgstPercent').value,
+      items
+    };
+    const a = document.createElement('a');
+    a.href = 'data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+    a.download = 'invoice_'+(data.invoiceNo||Date.now())+'.json';
+    a.click();
+    showToast('✅ Invoice saved as JSON!','success');
+  }
+
+  function loadJSON(event) {
+    const file = event.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const d = JSON.parse(e.target.result);
+        const g = (id,val) => { const el=document.getElementById(id); if(el&&val!==undefined) el.value=val; };
+        g('gstin',d.gstin); g('invoiceNo',d.invoiceNo); g('invoiceDate',d.invoiceDate);
+        g('rcm',d.rcm); g('transportMode',d.transportMode); g('vehicleNumber',d.vehicleNumber);
+        g('dateOfSupply',d.dateOfSupply); g('placeOfSupply',d.placeOfSupply);
+        g('stateCode',d.stateCode); g('billName',d.billName); g('billAddr',d.billAddr);
+        g('receiverGstin',d.receiverGstin); g('shipNameAddr',d.shipNameAddr);
+        g('bankName',d.bankName); g('accountNumber',d.accountNumber); g('ifscCode',d.ifscCode);
+        g('cgstPercent',d.cgstPercent); g('sgstPercent',d.sgstPercent);
+        tbody.innerHTML = '';
+        (d.items||[]).forEach(item => addRow(item));
+        if(!(d.items||[]).length) addRow();
+        recompute();
+        showToast('✅ Invoice loaded!','success');
+      } catch(err) { showToast('❌ Invalid JSON file','error'); }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function resetForm() {
+    if(!confirm('Clear this invoice?')) return;
+    document.querySelectorAll('.inv-paper input, .inv-paper textarea').forEach(el => {
+      if(!['gstin','bankName','accountNumber','ifscCode','rcm','placeOfSupply','stateCode','invoiceNo','cgstPercent','sgstPercent'].includes(el.id)) el.value='';
+    });
+    document.getElementById('invoiceDate').value  = today;
+    document.getElementById('dateOfSupply').value = today;
+    tbody.innerHTML = ''; addRow(); recompute();
+  }
+
+  // ── PRINT PAGE BUILDER ───────────────────────────────────
+  // This runs just before printing and builds paginated print pages
+  // The CSS then hides everything except #printPages
+  const ROWS_PER_PAGE_FIRST = 14;
+  const ROWS_PER_PAGE_CONT  = 22;
+
+  function buildPrintPages() {
+    const container = document.getElementById('printPages');
+    container.innerHTML = '';
+
+    const items = [...tbody.querySelectorAll('tr')].map(r => {
+      const q   = r.querySelector('.qty').value.toString().toUpperCase();
+      const qty = q === 'LS' ? 1 : (parseFloat(q)||0);
+      const rt  = parseFloat(r.querySelector('.rate').value)||0;
+      return {
+        desc: r.querySelector('.desc').value,
+        hsn:  r.querySelector('.hsn').value,
+        uom:  r.querySelector('.uom').value,
+        qty:  r.querySelector('.qty').value,
+        rate: rt,
+        amt:  qty * rt
+      };
+    });
+
+    const data = {
+      gstin:         document.getElementById('gstin').value,
+      invoiceNo:     document.getElementById('invoiceNo').value,
+      invoiceDate:   document.getElementById('invoiceDate').value,
+      rcm:           document.getElementById('rcm').value,
+      transportMode: document.getElementById('transportMode').value,
+      vehicleNumber: document.getElementById('vehicleNumber').value,
+      dateOfSupply:  document.getElementById('dateOfSupply').value,
+      placeOfSupply: document.getElementById('placeOfSupply').value,
+      stateCode:     document.getElementById('stateCode').value,
+      billName:      document.getElementById('billName').value,
+      billAddr:      document.getElementById('billAddr').value,
+      receiverGstin: document.getElementById('receiverGstin').value,
+      shipNameAddr:  document.getElementById('shipNameAddr').value,
+      bankName:      document.getElementById('bankName').value,
+      accountNumber: document.getElementById('accountNumber').value,
+      ifscCode:      document.getElementById('ifscCode').value,
+      cgstP:         parseFloat(document.getElementById('cgstPercent').value)||0,
+      sgstP:         parseFloat(document.getElementById('sgstPercent').value)||0,
+      subtotal:      document.getElementById('subtotal').textContent,
+      cgstAmt:       document.getElementById('cgstAmount').textContent,
+      sgstAmt:       document.getElementById('sgstAmount').textContent,
+      taxAmt:        document.getElementById('taxAmount').textContent,
+      grandTotal:    document.getElementById('grandTotal').textContent,
+      amountWords:   document.getElementById('amountWords').textContent,
+    };
+
+    // Chunk items into pages
+    const chunks = [];
+    let rem = [...items];
+    let first = true;
+    while (rem.length > 0) {
+      const limit = first ? ROWS_PER_PAGE_FIRST : ROWS_PER_PAGE_CONT;
+      chunks.push(rem.splice(0, limit));
+      first = false;
+    }
+    if (chunks.length === 0) chunks.push([]);
+
+    chunks.forEach((chunk, pageIdx) => {
+      const isFirst = pageIdx === 0;
+      const isLast  = pageIdx === chunks.length - 1;
+      const pg = document.createElement('div');
+      pg.className = 'print-page';
+
+      let html = '';
+
+      // ── Header ──
+      if (isFirst) {
+        html += `
+          <header style="text-align:center;margin-bottom:6px;">
+            <h1 style="color:#1e40af;font-weight:900;margin-bottom:2px;">Maria Electrotech</h1>
+            <div>61/3623, 39/4379-A-2, Swarna Building, Valanjambalam Junction, Cochin</div>
+            <div>Mob: 9847192829, 8547364420 | Email: christopherreynold71@gmail.com</div>
+            <div style="font-weight:700;">GSTIN: ${escapeHtml(data.gstin)}</div>
+            <div style="margin-top:4px;border-top:2px solid #222;border-bottom:2px solid #222;padding:2px 0;">
+              <strong style="font-size:13pt !important;letter-spacing:3px;">INVOICE</strong>
+            </div>
+          </header>
+          <div style="text-align:right;margin-bottom:4px;">
+            <span style="border:1px solid #333;padding:1px 6px;font-weight:700;">Original for Recipient</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:9pt !important;border-bottom:1px solid #ccc;padding-bottom:6px;margin-bottom:6px;">
+            <div><strong>RCM:</strong> ${escapeHtml(data.rcm)} &nbsp; <strong>Inv No.:</strong> ${escapeHtml(data.invoiceNo)}</div>
+            <div><strong>Transport:</strong> ${escapeHtml(data.transportMode)} &nbsp; <strong>Vehicle:</strong> ${escapeHtml(data.vehicleNumber)}</div>
+            <div><strong>Date:</strong> ${escapeHtml(data.invoiceDate)} &nbsp; <strong>State:</strong> ${escapeHtml(data.stateCode)} (Kerala)</div>
+            <div><strong>Date of Supply:</strong> ${escapeHtml(data.dateOfSupply)} &nbsp; <strong>Place:</strong> ${escapeHtml(data.placeOfSupply)}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div style="border:1px solid #ddd;padding:5px;border-radius:3px;">
+              <strong>Bill To:</strong><br/>
+              <div>${escapeHtml(data.billName)}</div>
+              <div style="white-space:pre-wrap">${escapeHtml(data.billAddr)}</div>
+              <div>GSTIN: ${escapeHtml(data.receiverGstin)}</div>
+            </div>
+            <div style="border:1px solid #ddd;padding:5px;border-radius:3px;">
+              <strong>Ship To:</strong><br/>
+              <div style="white-space:pre-wrap">${escapeHtml(data.shipNameAddr)}</div>
+            </div>
+          </div>`;
+      } else {
+        // Continuation page header
+        html += `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+            <div>
+              <strong style="color:#1e40af;">Maria Electrotech</strong>
+              <div>61/3623, 39/4379-A-2, Swarna Building, Cochin | GSTIN: ${escapeHtml(data.gstin)}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="border:1px solid #333;padding:1px 6px;font-weight:700;margin-bottom:3px;">Continuation Sheet</div>
+              <div><strong>Invoice:</strong> ${escapeHtml(data.invoiceNo)} &nbsp; <strong>Date:</strong> ${escapeHtml(data.invoiceDate)}</div>
+              <div><strong>Receiver:</strong> ${escapeHtml(data.billName)}</div>
+            </div>
+          </div>
+          <div style="text-align:center;border-top:2px solid #222;border-bottom:2px solid #222;padding:2px 0;margin-bottom:6px;">
+            <strong style="font-size:12pt !important;letter-spacing:2px;">INVOICE</strong>
+          </div>`;
+      }
+
+      // ── Items table ──
+      html += `
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#eef2ff;border-top:2px solid #222;border-bottom:2px solid #222;">
+              <th style="padding:2px 4px;border:1px solid #ddd;width:4%;text-align:center;">S.No</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;text-align:left;width:40%;">Description</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;width:10%;text-align:center;">HSN/SAC</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;width:6%;text-align:center;">UOM</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;width:8%;text-align:center;">Qty</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;width:12%;text-align:right;">Rate</th>
+              <th style="padding:2px 4px;border:1px solid #ddd;width:20%;text-align:right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${chunk.map((it,i) => {
+              const sn = (pageIdx===0 ? 0 : chunks.slice(0,pageIdx).reduce((s,c)=>s+c.length,0)) + i + 1;
+              return `<tr>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:center;">${sn}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;">${escapeHtml(it.desc)}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:center;">${escapeHtml(it.hsn)}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:center;">${escapeHtml(it.uom)}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:center;">${escapeHtml(String(it.qty))}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:right;">${fmtN(it.rate)}</td>
+                <td style="padding:2px 4px;border:1px solid #ddd;text-align:right;font-weight:700;">${fmtN(it.amt)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+
+      // ── Footer (only on last page) ──
+      if (isLast) {
+        html += `
+          <div class="summary-block" style="margin-top:10px;">
+            <div style="font-weight:700;margin-bottom:2px;">Total Invoice Amount In Words:</div>
+            <div style="border-bottom:1px solid #333;padding-bottom:2px;font-weight:700;">${escapeHtml(data.amountWords)}</div>
+          </div>
+          <div class="summary-block footer-flex-container" style="margin-top:8px;display:flex;justify-content:space-between;gap:16px;">
+            <div style="width:55%;border:1px solid #ddd;padding:6px;border-radius:3px;">
+              <strong>BANK DETAILS</strong><br/>
+              Bank: ${escapeHtml(data.bankName)}<br/>
+              Account: ${escapeHtml(data.accountNumber)}<br/>
+              IFSC: ${escapeHtml(data.ifscCode)}<br/>
+              <div style="margin-top:4px;font-weight:700;">Terms & Conditions:</div>
+              <div style="font-style:italic;">Certified that the particulars given above are true and correct. E. &amp; O. E.</div>
+            </div>
+            <div style="width:42%;">
+              <div style="border:1px solid #ddd;padding:6px;border-radius:3px;">
+                <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Subtotal:</span><strong>${data.subtotal}</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #333;"><span>Total Before Tax:</span><strong>${data.subtotal}</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>CGST (${data.cgstP}%):</span><span>${data.cgstAmt}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid #333;"><span>SGST (${data.sgstP}%):</span><span>${data.sgstAmt}</span></div>
+                <div style="display:flex;justify-content:space-between;padding:2px 0;"><span>Tax Amount:</span><strong>${data.taxAmt}</strong></div>
+                <div style="display:flex;justify-content:space-between;padding:4px 0;font-weight:900;border-top:2px solid #222;margin-top:4px;"><span>Total After Tax:</span><span>${data.grandTotal}</span></div>
+              </div>
+              <div style="margin-top:24px;text-align:center;">
+                <div style="border-top:1px solid #333;display:inline-block;padding:2px 24px;font-weight:700;">For Maria Electrotech</div>
+                <div style="font-style:italic;margin-top:18px;">Authorised Signatory</div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      pg.innerHTML = html;
+      container.appendChild(pg);
+    });
+  }
+
+  // Build print pages just before print dialog opens
+  window.onbeforeprint = function() {
+    const invNo = document.getElementById('invoiceNo').value.trim() || 'Draft';
+    document.title = 'Invoice_' + invNo;
+    buildPrintPages();
+  };
+  window.onafterprint = function() {
+    document.title = 'Invoice — Maria Electro Tech';
+  };
+
+  // ── INIT ──
+  addRow();
+</script>
+</body>
+</html>

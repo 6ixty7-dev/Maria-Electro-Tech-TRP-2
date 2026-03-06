@@ -3,444 +3,275 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard — Maria Electro Tech Admin</title>
+  <title>Dashboard — Maria Electro Tech</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
-    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 32px 16px 70px; }
-
-    .page-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 28px;
-      flex-wrap: wrap;
-      gap: 12px;
+    .period-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+    .period-tab {
+      padding:7px 18px; border-radius:50px; border:2px solid var(--border);
+      background:transparent; font-family:'Nunito',sans-serif; font-size:13px;
+      font-weight:700; color:var(--gray-dark); cursor:pointer; transition:all 0.2s;
     }
+    .period-tab.active { background:var(--blue); border-color:var(--blue); color:white; }
 
-    .page-top h1 { font-size: 26px; color: var(--dark); }
-    .page-top p  { color: var(--gray); font-size: 14px; margin-top: 4px; }
+    .stat-value-sm { font-size:18px !important; }
 
-    /* ===== STATS GRID ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
+    .quick-links {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+      gap:14px; margin-top:24px;
     }
-
-    @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 580px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-
-    .stat-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      padding: 20px 18px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      position: relative;
-      overflow: hidden;
+    .quick-link-card {
+      background:var(--white); border-radius:var(--radius-lg);
+      padding:22px 18px; border:2px solid var(--border);
+      text-align:center; transition:all 0.2s;
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      box-shadow:var(--shadow-sm);
     }
-
-    .stat-card::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-    }
-
-    .stat-card.s-blue::after   { background: var(--blue); }
-    .stat-card.s-green::after  { background: var(--green); }
-    .stat-card.s-orange::after { background: #F97316; }
-    .stat-card.s-red::after    { background: var(--red); }
-    .stat-card.s-purple::after { background: #A855F7; }
-
-    .stat-icon {
-      font-size: 22px;
-      margin-bottom: 12px;
-      display: block;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--gray);
-      font-family: 'Nunito', sans-serif;
-      margin-bottom: 6px;
-    }
-
-    .stat-value {
-      font-family: 'Nunito', sans-serif;
-      font-size: 26px;
-      font-weight: 900;
-      color: var(--black);
-      line-height: 1;
-    }
-
-    .stat-sub {
-      font-size: 11px;
-      color: #BBB;
-      margin-top: 5px;
-    }
-
-    /* ===== TABLE CARD ===== */
-    .table-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .table-toolbar {
-      padding: 20px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid var(--border);
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .table-toolbar h3 { font-size: 17px; color: var(--dark); }
-
-    .toolbar-right { display: flex; gap: 10px; align-items: center; }
-
-    #search-input {
-      padding: 10px 16px;
-      border: 2px solid var(--border);
-      border-radius: 50px;
-      font-size: 14px;
-      width: 240px;
-      font-family: 'Mulish', sans-serif;
-      background: var(--bg);
-      color: var(--black);
-      transition: all 0.2s;
-    }
-
-    #search-input:focus {
-      outline: none;
-      border-color: var(--blue);
-      background: white;
-      box-shadow: 0 0 0 4px rgba(61,184,232,0.1);
-    }
-
-    /* Filter row */
-    .filter-row {
-      padding: 14px 24px;
-      border-bottom: 1px solid var(--gray-light);
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .filter-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--gray);
-      font-family: 'Nunito', sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .filter-btn {
-      padding: 6px 14px;
-      border-radius: 50px;
-      font-size: 12px;
-      font-weight: 700;
-      font-family: 'Nunito', sans-serif;
-      border: 2px solid var(--border);
-      background: transparent;
-      color: var(--gray-dark);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .filter-btn:hover, .filter-btn.active {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: white;
-    }
-
-    /* Empty / loading */
-    .empty-state {
-      text-align: center;
-      padding: 64px 20px;
-      color: var(--gray);
-    }
-
-    .empty-state .es-icon { font-size: 52px; margin-bottom: 16px; display: block; }
-    .empty-state p { font-size: 15px; }
-
-    .loading-dots::after {
-      content: '...';
-      animation: dots 1.2s infinite;
-    }
-
-    @keyframes dots {
-      0%   { content: '.'; }
-      33%  { content: '..'; }
-      66%  { content: '...'; }
-    }
-
-    @media (max-width: 600px) {
-      #search-input { width: 100%; }
-      .table-toolbar { flex-direction: column; align-items: flex-start; }
-    }
+    .quick-link-card:hover { border-color:var(--blue); transform:translateY(-3px); box-shadow:var(--shadow); }
+    .quick-link-card .ql-icon { font-size:32px; }
+    .quick-link-card .ql-title { font-family:'Nunito',sans-serif; font-weight:800; font-size:14px; color:var(--dark); }
+    .quick-link-card .ql-sub { font-size:12px; color:var(--gray); }
   </style>
 </head>
 <body>
+<script src="nav.js"></script>
 
-<!-- ===== LOCK SCREEN ===== -->
-<div class="lock-screen" id="lock-screen">
-  <div class="lock-card">
-    <div class="lock-logo"><img src="logo.png" alt="Maria Electro Tech"/></div>
-    <div class="lock-title">Dashboard Access</div>
-    <div class="lock-sub">Enter your password to view jobs</div>
-    <input type="password" class="lock-input" id="pwd-input" placeholder="Enter password" onkeyup="checkPwd(event)"/>
-    <button class="btn btn-primary" style="width:100%;" onclick="checkPwd({key:'Enter'})">Unlock →</button>
-    <div class="lock-error" id="pwd-error">❌ Wrong password. Please try again.</div>
-  </div>
-</div>
-
-<!-- ===== ADMIN NAV ===== -->
-<nav class="admin-nav">
-  <div class="nav-logo">
-    <img src="logo.png" alt="Logo"/>
-    <div class="nav-logo-text">
-      Maria Electro Tech
-      <small>Admin Portal</small>
-    </div>
-  </div>
-  <div class="admin-nav-links">
-    <a href="admin.html">➕ <span>Add Job</span></a>
-    <a href="dashboard.html" class="active">📊 <span>Dashboard</span></a>
-    <a href="index.html">🌐 <span>Website</span></a>
-  </div>
-</nav>
-
-<!-- ===== PAGE ===== -->
 <div class="page-wrap">
-
   <div class="page-top">
     <div>
-      <h1>📊 Jobs Dashboard</h1>
-      <p>Today's summary at the top. All recorded jobs listed below.</p>
+      <h1>📊 Dashboard Overview</h1>
+      <p id="today-date">Loading...</p>
     </div>
-    <button class="btn btn-primary btn-sm" onclick="loadData()">🔄 Refresh</button>
+    <div class="period-tabs">
+      <button class="period-tab active" onclick="setPeriod('today',this)">Today</button>
+      <button class="period-tab" onclick="setPeriod('week',this)">This Week</button>
+      <button class="period-tab" onclick="setPeriod('month',this)">This Month</button>
+      <button class="period-tab" onclick="setPeriod('all',this)">All Time</button>
+    </div>
   </div>
 
-  <!-- TODAY'S STATS -->
-  <div class="stats-grid">
+  <!-- STATS ROW 1 — Revenue & Profit -->
+  <div class="stats-grid-5" style="margin-bottom:14px;">
     <div class="stat-card s-blue">
       <span class="stat-icon">📋</span>
-      <div class="stat-label">Jobs Today</div>
-      <div class="stat-value" id="stat-jobs">—</div>
-      <div class="stat-sub">bookings today</div>
+      <div class="stat-label">Jobs</div>
+      <div class="stat-value" id="s-jobs">—</div>
+      <div class="stat-sub" id="s-jobs-sub">loading...</div>
     </div>
     <div class="stat-card s-green">
       <span class="stat-icon">💵</span>
-      <div class="stat-label">Revenue Today</div>
-      <div class="stat-value" id="stat-revenue">—</div>
+      <div class="stat-label">Revenue</div>
+      <div class="stat-value stat-value-sm" id="s-revenue">—</div>
       <div class="stat-sub">amount charged</div>
     </div>
     <div class="stat-card s-orange">
-      <span class="stat-icon">🛒</span>
-      <div class="stat-label">Material Cost</div>
-      <div class="stat-value" id="stat-material">—</div>
-      <div class="stat-sub">spent on materials</div>
+      <span class="stat-icon">📦</span>
+      <div class="stat-label">Mat. Profit</div>
+      <div class="stat-value stat-value-sm" id="s-mat-profit">—</div>
+      <div class="stat-sub">charged − actual</div>
     </div>
-    <div class="stat-card s-red">
-      <span class="stat-icon">👷</span>
-      <div class="stat-label">Labour Cost</div>
-      <div class="stat-value" id="stat-labour">—</div>
-      <div class="stat-sub">paid to workers</div>
+    <div class="stat-card s-teal">
+      <span class="stat-icon">🔧</span>
+      <div class="stat-label">Labour Profit</div>
+      <div class="stat-value stat-value-sm" id="s-lab-profit">—</div>
+      <div class="stat-sub">labour − staff cut</div>
     </div>
     <div class="stat-card s-purple">
       <span class="stat-icon">📈</span>
-      <div class="stat-label">Profit Today</div>
-      <div class="stat-value" id="stat-profit">—</div>
-      <div class="stat-sub">net earnings</div>
+      <div class="stat-label">Final Profit</div>
+      <div class="stat-value stat-value-sm" id="s-profit">—</div>
+      <div class="stat-sub">total business profit</div>
     </div>
   </div>
 
-  <!-- JOBS TABLE -->
+  <!-- STATS ROW 2 — Cost breakdown -->
+  <div class="stats-grid-4" style="margin-bottom:24px;">
+    <div class="stat-card s-blue">
+      <span class="stat-icon">🛒</span>
+      <div class="stat-label">Material Charged</div>
+      <div class="stat-value stat-value-sm" id="s-mat-charged">—</div>
+      <div class="stat-sub">to customers</div>
+    </div>
+    <div class="stat-card s-orange">
+      <span class="stat-icon">🏪</span>
+      <div class="stat-label">Material Actual</div>
+      <div class="stat-value stat-value-sm" id="s-mat-actual">—</div>
+      <div class="stat-sub">dealer cost</div>
+    </div>
+    <div class="stat-card s-green">
+      <span class="stat-icon">👷</span>
+      <div class="stat-label">Labour Charged</div>
+      <div class="stat-value stat-value-sm" id="s-lab-charged">—</div>
+      <div class="stat-sub">to customers</div>
+    </div>
+    <div class="stat-card s-red">
+      <span class="stat-icon">💸</span>
+      <div class="stat-label">Staff Earnings</div>
+      <div class="stat-value stat-value-sm" id="s-staff-cut">—</div>
+      <div class="stat-sub">total staff cut</div>
+    </div>
+  </div>
+
+  <!-- QUICK NAV CARDS -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3 style="margin-bottom:4px; font-size:16px;">⚡ Quick Access</h3>
+    <p style="font-size:13px; color:var(--gray); margin-bottom:16px;">Jump to any section of the portal</p>
+    <div class="quick-links">
+      <a href="admin.html" class="quick-link-card">
+        <div class="ql-icon">➕</div>
+        <div class="ql-title">Add New Job</div>
+        <div class="ql-sub">Record a completed job</div>
+      </a>
+      <a href="jobs.html" class="quick-link-card">
+        <div class="ql-icon">📋</div>
+        <div class="ql-title">Job Records</div>
+        <div class="ql-sub">View all past jobs</div>
+      </a>
+      <a href="staff.html" class="quick-link-card">
+        <div class="ql-icon">👷</div>
+        <div class="ql-title">Staff & Payroll</div>
+        <div class="ql-sub">Weekly earnings & advances</div>
+      </a>
+      <a href="invoice.html" class="quick-link-card">
+        <div class="ql-icon">🧾</div>
+        <div class="ql-title">Invoice Generator</div>
+        <div class="ql-sub">Create GST invoices</div>
+      </a>
+      <a href="estimate.html" class="quick-link-card">
+        <div class="ql-icon">📝</div>
+        <div class="ql-title">Estimate</div>
+        <div class="ql-sub">Create job estimates</div>
+      </a>
+      <a href="admin.html#photos" class="quick-link-card">
+        <div class="ql-icon">📸</div>
+        <div class="ql-title">Gallery</div>
+        <div class="ql-sub">Upload project photos</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- RECENT JOBS TABLE -->
   <div class="table-card">
     <div class="table-toolbar">
-      <h3>📋 All Jobs</h3>
-      <div class="toolbar-right">
-        <input type="text" id="search-input" placeholder="🔍 Search by name, phone..." oninput="filterTable()"/>
-      </div>
+      <h3>🕐 Recent Jobs</h3>
+      <a href="jobs.html" class="btn btn-outline btn-sm">View All →</a>
     </div>
-
-    <div class="filter-row">
-      <span class="filter-label">Filter:</span>
-      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-      <button class="filter-btn" onclick="setFilter('Paid', this)">🟢 Paid</button>
-      <button class="filter-btn" onclick="setFilter('Pending', this)">🟡 Pending</button>
-    </div>
-
-    <div id="table-container">
-      <div class="empty-state">
-        <span class="es-icon">⏳</span>
-        <p class="loading-dots">Loading jobs from Google Sheets</p>
-      </div>
+    <div id="recent-jobs-container">
+      <div class="empty-state"><span class="es-icon">⏳</span><p>Loading recent jobs...</p></div>
     </div>
   </div>
-
 </div>
 
 <div id="toast"></div>
-
 <script src="script.js"></script>
 <script>
-  const ADMIN_PASSWORD = "maria2025"; // ⚠️ Must match admin.html
+  renderNav('dashboard');
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 
-  function checkPwd(e) {
-    if (e.key !== 'Enter' && e.type !== 'click') return;
-    const val = document.getElementById('pwd-input').value;
-    if (val === ADMIN_PASSWORD) {
-      document.getElementById('lock-screen').style.display = 'none';
-      loadData();
-    } else {
-      document.getElementById('pwd-error').style.display = 'block';
-      document.getElementById('pwd-input').value = '';
-      document.getElementById('pwd-input').focus();
-    }
+  let allJobs = [];
+  let currentPeriod = 'today';
+
+  async function init() {
+    allJobs = await fetchJobsFromSheet() || [];
+    updateStats();
+    renderRecentJobs();
   }
 
-  let allRows = [];
-  let currentFilter = 'all';
-
-  async function loadData() {
-    document.getElementById('table-container').innerHTML = `
-      <div class="empty-state">
-        <span class="es-icon">⏳</span>
-        <p class="loading-dots">Loading jobs from Google Sheets</p>
-      </div>`;
-
-    const rows = await fetchJobsFromSheet();
-
-    if (!rows) {
-      document.getElementById('table-container').innerHTML = `
-        <div class="empty-state">
-          <span class="es-icon">❌</span>
-          <p>Could not load data.<br/>Please check your Script URL in <strong>script.js</strong></p>
-        </div>`;
-      return;
-    }
-
-    if (rows.length === 0) {
-      document.getElementById('table-container').innerHTML = `
-        <div class="empty-state">
-          <span class="es-icon">📭</span>
-          <p>No jobs recorded yet.<br/>Add your first job from the <a href="admin.html" style="color:var(--blue)">Add Job page</a>.</p>
-        </div>`;
-      calcTodayStats([]);
-      return;
-    }
-
-    allRows = rows;
-    calcTodayStats(rows);
-    applyFilters();
-  }
-
-  function calcTodayStats(rows) {
-    const today = new Date().toISOString().split('T')[0];
-    const t = rows.filter(r => String(r[0]).startsWith(today));
-
-    const fmt = n => '₹' + n.toLocaleString('en-IN');
-
-    document.getElementById('stat-jobs').textContent     = t.length;
-    document.getElementById('stat-revenue').textContent  = fmt(t.reduce((s,r)=>s+(parseFloat(r[9])||0),0));
-    document.getElementById('stat-material').textContent = fmt(t.reduce((s,r)=>s+(parseFloat(r[7])||0),0));
-    document.getElementById('stat-labour').textContent   = fmt(t.reduce((s,r)=>s+(parseFloat(r[8])||0),0));
-
-    const profit = t.reduce((s,r)=>s+(parseFloat(r[10])||0),0);
-    const el = document.getElementById('stat-profit');
-    el.textContent = fmt(profit);
-    el.style.color = profit >= 0 ? 'var(--black)' : 'var(--red)';
-  }
-
-  function setFilter(f, btn) {
-    currentFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  function setPeriod(p, btn) {
+    currentPeriod = p;
+    document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    applyFilters();
+    updateStats();
   }
 
-  function applyFilters() {
-    const q = document.getElementById('search-input').value.toLowerCase();
-    let filtered = allRows.filter(r =>
-      (currentFilter === 'all' || String(r[11]).toLowerCase() === currentFilter.toLowerCase()) &&
-      r.some(c => String(c).toLowerCase().includes(q))
-    );
-    renderTable(filtered);
+  function filterByPeriod(jobs) {
+    const today = todayStr();
+    if (currentPeriod === 'today') return jobs.filter(j => String(j[0]).startsWith(today));
+    if (currentPeriod === 'week') {
+      const {start, end} = getWeekRange(0);
+      return jobs.filter(j => inRange(String(j[0]).substring(0,10), start, end));
+    }
+    if (currentPeriod === 'month') {
+      const ym = today.substring(0,7);
+      return jobs.filter(j => String(j[0]).startsWith(ym));
+    }
+    return jobs;
   }
 
-  function filterTable() { applyFilters(); }
+  function updateStats() {
+    const filtered = filterByPeriod(allJobs);
 
-  function renderTable(rows) {
-    if (rows.length === 0) {
-      document.getElementById('table-container').innerHTML = `
-        <div class="empty-state">
-          <span class="es-icon">🔍</span>
-          <p>No jobs found matching your search.</p>
-        </div>`;
+    const sub = {
+      today: 'today',
+      week:  'this week',
+      month: 'this month',
+      all:   'all time'
+    }[currentPeriod];
+
+    document.getElementById('s-jobs').textContent       = filtered.length;
+    document.getElementById('s-jobs-sub').textContent   = 'jobs ' + sub;
+
+    let revenue=0, matCharged=0, matActual=0, labCharged=0, staffCut=0,
+        matProfit=0, labProfit=0, finalProfit=0;
+
+    filtered.forEach(j => {
+      revenue     += parseFloat(j[11]) || 0;
+      matCharged  += parseFloat(j[7])  || 0;
+      matActual   += parseFloat(j[8])  || 0;
+      labCharged  += parseFloat(j[9])  || 0;
+      staffCut    += parseFloat(j[10]) || 0;
+      const p = calcJobProfit(j);
+      matProfit   += p.matProfit;
+      labProfit   += p.labourProfit;
+      finalProfit += p.finalProfit;
+    });
+
+    document.getElementById('s-revenue').textContent    = fmt(revenue);
+    document.getElementById('s-mat-charged').textContent= fmt(matCharged);
+    document.getElementById('s-mat-actual').textContent = fmt(matActual);
+    document.getElementById('s-lab-charged').textContent= fmt(labCharged);
+    document.getElementById('s-staff-cut').textContent  = fmt(staffCut);
+    document.getElementById('s-mat-profit').textContent = fmt(matProfit);
+    document.getElementById('s-lab-profit').textContent = fmt(labProfit);
+    document.getElementById('s-profit').textContent     = fmt(finalProfit);
+  }
+
+  function renderRecentJobs() {
+    const recent = [...allJobs].reverse().slice(0, 8);
+    if (!recent.length) {
+      document.getElementById('recent-jobs-container').innerHTML =
+        `<div class="empty-state"><span class="es-icon">📭</span><p>No jobs yet.</p></div>`;
       return;
     }
-
-    const sorted = [...rows].reverse(); // Newest first
-
-    const html = `
+    document.getElementById('recent-jobs-container').innerHTML = `
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Phone</th>
-              <th>Address</th>
-              <th>Category</th>
-              <th>Staff</th>
-              <th>Material ₹</th>
-              <th>Labour ₹</th>
-              <th>Charged ₹</th>
-              <th>Profit ₹</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Date</th><th>Customer</th><th>Category</th>
+            <th>Staff</th><th>Charged</th><th>Final Profit</th><th>Status</th>
+          </tr></thead>
           <tbody>
-            ${sorted.map((r, i) => {
-              const profit = parseFloat(r[10]) || 0;
-              const profitColor = profit >= 0 ? 'var(--green-text)' : 'var(--red)';
-              return `
-              <tr>
-                <td style="color:var(--gray);font-size:12px">${sorted.length - i}</td>
-                <td>${r[0] || '—'}</td>
-                <td>
-                  <strong style="color:var(--dark)">${r[1] || '—'}</strong>
-                </td>
-                <td>${r[2] || '—'}</td>
-                <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis">${r[3] || '—'}</td>
-                <td><span style="background:var(--blue-light);color:var(--blue-dark);padding:3px 10px;border-radius:50px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif">${r[4] || '—'}</span></td>
-                <td>${r[6] || '—'}</td>
-                <td>₹${parseFloat(r[7]||0).toLocaleString('en-IN')}</td>
-                <td>₹${parseFloat(r[8]||0).toLocaleString('en-IN')}</td>
-                <td><strong>₹${parseFloat(r[9]||0).toLocaleString('en-IN')}</strong></td>
-                <td><strong style="color:${profitColor}">₹${profit.toLocaleString('en-IN')}</strong></td>
-                <td><span class="badge ${r[11]==='Paid'?'badge-paid':'badge-pending'}">${r[11]==='Paid'?'✅':'⏳'} ${r[11]||'—'}</span></td>
+            ${recent.map(j => {
+              const p = calcJobProfit(j);
+              return `<tr>
+                <td>${j[0]||'—'}</td>
+                <td><strong>${j[1]||'—'}</strong></td>
+                <td><span class="badge badge-blue">${j[4]||'—'}</span></td>
+                <td>${j[6]||'—'}</td>
+                <td><strong>${fmt(j[11])}</strong></td>
+                <td style="color:${p.finalProfit>=0?'var(--green-text)':'var(--red)'}">
+                  <strong>${fmt(p.finalProfit)}</strong></td>
+                <td><span class="badge ${j[15]==='Paid'?'badge-paid':'badge-pending'}">
+                  ${j[15]==='Paid'?'✅ Paid':'⏳ Pending'}</span></td>
               </tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>`;
-
-    document.getElementById('table-container').innerHTML = html;
   }
+
+  init();
 </script>
 </body>
 </html>
